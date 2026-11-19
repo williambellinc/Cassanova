@@ -1,25 +1,31 @@
 import { Request, Response } from 'express';
 import { randomInt, randomUUID } from 'crypto';
 import GameRound from '../models/GameRound';
-import { PLINKO_MULTIPLIERS, minesMultiplier, plinkoExpectedReturn, crashPoint } from '../games/originals.math';
+import { PLINKO_MULTIPLIERS, minesMultiplier, plinkoExpectedReturn, crashPoint, calculateDiceOutcome } from '../games/originals.math';
 
 /**
  * All VELT Originals endpoints in this module are PRACTICE-ONLY.
  * Outcomes are generated on the server with Node's cryptographic RNG.
  * No stake, wallet mutation, prize, or real-money settlement is possible.
  */
-export const playDiceDemo = async (_req: Request, res: Response) => {
+export const playDiceDemo = async (req: Request, res: Response) => {
   try {
-    const diceValue = randomInt(1, 7);
+    const target = Number(req.body?.target ?? 50);
+    const direction = req.body?.direction === undefined ? 'over' : req.body.direction;
+    const targetHundredths = Math.round(target * 100);
+    if (!Number.isFinite(target) || Math.abs(target - targetHundredths / 100) > 0.0000001 ||
+        targetHundredths < 1 || targetHundredths > 9999 || !['over', 'under'].includes(direction)) {
+      return res.status(400).json({ message: 'target must be between 0.01 and 99.99 and direction must be over or under' });
+    }
+    const rollHundredths = randomInt(0, 10000);
+    const outcome = calculateDiceOutcome(rollHundredths, targetHundredths, direction as 'over' | 'under');
     const round = await GameRound.create({
       roundReference: randomUUID(), gameCode: 'velt-dice', mode: 'demo',
-      outcome: { diceValue, result: diceValue % 2 === 0 ? 'even' : 'odd' },
-      algorithmVersion: 'node-crypto-randomInt-v1',
+      outcome, algorithmVersion: 'velt-dice-over-under-99pct-v1',
     });
     return res.status(201).json({
       roundReference: round.roundReference, gameCode: round.gameCode, mode: round.mode,
-      outcome: round.outcome, createdAt: round.createdAt,
-      notice: 'Practice only. No stake or prize.',
+      outcome, createdAt: round.createdAt, notice: 'Practice only. No stake or prize.',
     });
   } catch (error) {
     console.error('Dice demo error:', error);
