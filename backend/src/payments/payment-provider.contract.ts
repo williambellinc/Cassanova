@@ -27,6 +27,7 @@ export interface PaymentProviderAdapter {
     amountMinor: number;
     currency: string;
     returnUrl: string;
+    customerEmail: string;
   }): Promise<{ providerPaymentId: string; redirectUrl?: string }>;
   requestPayout(input: {
     merchantReference: string;
