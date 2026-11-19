@@ -13,8 +13,14 @@ import originalsRoutes from './routes/originals.routes';
 import paymentWebhookRoutes from './routes/payment-webhook.routes';
 import paymentRoutes from './routes/payment.routes';
 import { securityHeaders } from './middleware/security.middleware';
+import { registerPaymentProvider } from './payments/payment-provider.contract';
+import { FlutterwaveV3Adapter } from './payments/flutterwave-v3.adapter';
 
 dotenv.config();
+
+if (process.env.PAYMENT_PROVIDER_ID === 'flutterwave' && process.env.FLW_SECRET_KEY && process.env.FLW_WEBHOOK_SECRET_HASH) {
+  registerPaymentProvider(new FlutterwaveV3Adapter(process.env.FLW_SECRET_KEY, process.env.FLW_WEBHOOK_SECRET_HASH));
+}
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
