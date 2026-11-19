@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/cassanova';
 
 // Middleware
-app.use(cors());
+const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000')\n  .split(',').map((origin) => origin.trim()).filter(Boolean);\napp.use(cors({\n  origin: (origin, callback) => {\n    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);\n    return callback(new Error('Origin not allowed by CORS'));\n  },\n  credentials: true,\n}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -30,7 +30,7 @@ app.use('/api/transactions', transactionRoutes);
 
 // Health check
 app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ status: 'OK', message: 'Cassanova API is running' });
+  res.json({ status: 'OK', message: 'VELT API is running' });
 });
 
 // Database connection
