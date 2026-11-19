@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 type Game = 'dice' | 'mines' | 'plinko' | 'crash';
 type Result = Record<string, any>;
@@ -32,14 +32,14 @@ export default function VeltOriginalsPage() {
   const [diceTarget, setDiceTarget] = useState(50);
   const [diceDirection, setDiceDirection] = useState<'over' | 'under'>('over');
 
-  const refreshHistory = async (selected = game) => {
+  const refreshHistory = useCallback(async (selected: Game = game) => {
     try {
       const data = await call(`/originals/history?game=velt-${selected}`);
       setHistory(data.rounds || []);
     } catch { /* History is supplementary; keep the game usable. */ }
-  };
+  }, [game]);
 
-  useEffect(() => { refreshHistory(); }, [game]);
+  useEffect(() => { void refreshHistory(); }, [refreshHistory]);
 
   const run = async (fn: () => Promise<any>) => {
     setBusy(true); setError('');
