@@ -48,7 +48,7 @@ export const playSlotsPractice = async (_req: Request, res: Response) => {
 const cardValue = (rank: string) => rank === 'A' ? 1 : ['10','J','Q','K'].includes(rank) ? 0 : Number(rank);
 const handTotal = (cards: string[]) => cards.reduce((sum,card)=>sum+cardValue(card),0)%10;
 const drawBaccaratCard = (rng: ReturnType<typeof createFairRoundRandom>) => {
-  const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+  const ranks = ['A','2','3','4','5','6','7','8','9','10','10','10','10'];
   return ranks[rng.integer(0,ranks.length)];
 };
 export const playBaccaratPractice = async (_req: Request, res: Response) => {
@@ -69,7 +69,7 @@ export const playBaccaratPractice = async (_req: Request, res: Response) => {
   }
   const winner=p>b?'player':b>p?'banker':'tie';
   const round=await GameRound.create({roundReference:randomUUID(),gameCode:'velt-baccarat',mode:'demo',
-    outcome:{player,banker,playerTotal:p,bankerTotal:b,winner,bankerGrossMultiplier:winner==='banker'?1.95:winner==='tie'?8:0,playerGrossMultiplier:winner==='player'?2:winner==='tie'?8:0},
+    outcome:{player,banker,playerTotal:p,bankerTotal:b,winner,bankerGrossMultiplier:winner==='banker'?1.95:winner==='tie'?1:0,playerGrossMultiplier:winner==='player'?2:winner==='tie'?1:0,tieGrossMultiplier:winner==='tie'?9:0},
     algorithmVersion:'velt-baccarat-punto-banco-8deck-rules-v1',fairness:rng.fairness});
   return res.status(201).json({roundReference:round.roundReference,outcome:round.outcome,notice:'Practice only. Standard Punto Banco drawing rules; no stake or prize.'});
 };
