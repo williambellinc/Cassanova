@@ -5,6 +5,7 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import User from '../models/User';
 import PayoutBeneficiary from '../models/PayoutBeneficiary';
 import WithdrawalRequest from '../models/WithdrawalRequest';
+import JurisdictionPolicy from '../models/JurisdictionPolicy';
 import { paymentProviders } from '../payments/payment-provider.contract';
 import { getOrCreateLedgerAccount, postLedgerEntry } from '../services/ledger.service';
 
@@ -24,6 +25,9 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
   if (user.responsibleGaming?.selfExclusionUntil && new Date(user.responsibleGaming.selfExclusionUntil) > new Date()) {
     return res.status(403).json({ message: 'Account is self-excluded' });
   }
+  if (!req.jurisdictionCode) return res.status(403).json({ message: 'Trusted jurisdiction verification is required' });
+  const pending = await WithdrawalRequest.findOne({ userId: req.userId, status: { $in: ['reserved','approved','submitted'] } }).lean();
+  if (pending) return res.status(409).json({ message: 'An existing withdrawal is still being processed' });
   const beneficiary = await PayoutBeneficiary.findOne({ _id: beneficiaryId, userId: req.userId, currency, status: 'verified' }).select('+providerReference').lean();
   if (!beneficiary) return res.status(403).json({ message: 'A verified beneficiary matching the withdrawal currency is required' });
   const provider = paymentProviders.get(beneficiary.provider);
@@ -44,7 +48,7 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
     });
     const withdrawal = await WithdrawalRequest.create({
       userId: req.userId, beneficiaryId, provider: beneficiary.provider, currency, amountMinor,
-      feeMinor: 0, status: 'reserved', merchantReference, reservedJournalId: String(journal._id),
+      feeMinor: 0, status: 'reserved', merchantReference, reservedJournalId: String(journal._id), jurisdictionCode: req.jurisdictionCode,
     });
     return res.status(201).json({ withdrawalId: withdrawal._id, merchantReference, amountMinor, currency, status: withdrawal.status, message: 'Funds reserved; withdrawal awaits independent compliance approval.' });
   } catch (error: any) {
@@ -61,6 +65,10 @@ export const approveAndSubmitWithdrawal = async (req: AuthRequest, res: Response
   if (!withdrawal) return res.status(404).json({ message: 'Withdrawal not found' });
   if (String(withdrawal.userId) === req.userId) return res.status(403).json({ message: 'Maker-checker control: requester cannot approve their own withdrawal' });
   if (withdrawal.status !== 'reserved' && withdrawal.status !== 'approved') return res.status(409).json({ message: 'Withdrawal is not awaiting approval or submission' });
+  const player = await User.findById(withdrawal.userId).select('kycStatus amlStatus dateOfBirth responsibleGaming').lean();
+  if (!player || player.kycStatus !== 'verified' || player.amlStatus !== 'clear' || !player.dateOfBirth || new Date(player.dateOfBirth).getTime() > Date.now() - 18 * 365.25 * 86400000 || (player.responsibleGaming?.selfExclusionUntil && new Date(player.responsibleGaming.selfExclusionUntil) > new Date())) return res.status(403).json({ message: 'Player compliance eligibility changed; withdrawal held for review' });
+  const policy = await JurisdictionPolicy.findOne({ jurisdictionCode: withdrawal.jurisdictionCode, operatorEntity: process.env.VELT_OPERATOR_ENTITY, status: 'enabled', permittedProducts: 'casino', licenceReference: { $exists: true, $ne: '' }, evidenceReviewedAt: { $exists: true } }).lean();
+  if (!policy) return res.status(403).json({ message: 'Operator jurisdiction authorisation is no longer active' });
   const beneficiary = await PayoutBeneficiary.findOne({ _id: withdrawal.beneficiaryId, userId: withdrawal.userId, status: 'verified' }).select('+providerReference').lean();
   if (!beneficiary) return res.status(409).json({ message: 'Verified beneficiary is no longer available' });
   const provider = paymentProviders.get(withdrawal.provider);
