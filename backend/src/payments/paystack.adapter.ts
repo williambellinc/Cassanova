@@ -47,6 +47,21 @@ export class PaystackAdapter implements PaymentProviderAdapter {
     return {provider:this.providerId,providerEventId:'paystack:'+tx.id+':'+tx.status,providerPaymentId:String(tx.id),merchantReference:reference,amountMinor,currency:String(tx.currency).toUpperCase(),status:success?'settled':'failed',occurredAt:tx.paid_at?new Date(tx.paid_at):new Date(),rawPayloadHash:createHash('sha256').update(rawBody).digest('hex')};
   }
 
+  async createBeneficiary(input: { name:string; accountNumber:string; bankCode:string; currency:string }): Promise<{providerReference:string;verifiedName:string}> {
+    const resolveUrl=this.baseUrl+'/bank/resolve?account_number='+encodeURIComponent(input.accountNumber)+'&bank_code='+encodeURIComponent(input.bankCode);
+    const resolvedResponse=await fetch(resolveUrl,{headers:{Authorization:'Bearer '+this.secretKey}});
+    const resolved=await resolvedResponse.json() as any;
+    if(!resolvedResponse.ok||resolved?.status!==true||!resolved?.data?.account_name) throw new Error('Paystack bank account name resolution failed');
+    const verifiedName=String(resolved.data.account_name);
+    const typeByCurrency:Record<string,string>={NGN:'nuban',GHS:'ghipps',ZAR:'basa'};
+    const type=typeByCurrency[input.currency.toUpperCase()];
+    if(!type) throw new Error('Paystack bank payout rail is not configured for this currency');
+    const response=await fetch(this.baseUrl+'/transferrecipient',{method:'POST',headers:{Authorization:'Bearer '+this.secretKey,'Content-Type':'application/json'},body:JSON.stringify({type,name:verifiedName,account_number:input.accountNumber,bank_code:input.bankCode,currency:input.currency})});
+    const payload=await response.json() as any;
+    if(!response.ok||payload?.status!==true||!payload?.data?.recipient_code) throw new Error(payload?.message||'Paystack transfer recipient creation failed');
+    return {providerReference:String(payload.data.recipient_code),verifiedName};
+  }
+
   async parsePayoutWebhook(rawBody: Buffer) {
     const hook = JSON.parse(rawBody.toString('utf8')) as any, data = hook?.data;
     if (!['transfer.success','transfer.failed','transfer.reversed'].includes(String(hook?.event)) || !data?.reference) throw new Error('Unsupported Paystack payout event');
