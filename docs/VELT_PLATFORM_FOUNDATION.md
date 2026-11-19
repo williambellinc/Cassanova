@@ -78,3 +78,12 @@ This repository is an inherited demonstration casino application. Its existing s
 - The Dice practice mechanic is not independently certified and must not be offered for real-money play.
 - Jurisdiction policy and real-money denial controls are foundations only; trusted geolocation, licence evidence and complete KYC/AML enforcement remain to be integrated.
 - Existing accounts default to the `player` role. Administrator provisioning must be handled through a controlled operational process, not public registration.
+
+
+## Progress update — engineering phase 3
+
+- Added baseline HTTP security headers and disabled Express's identifying `X-Powered-By` header.
+- Limited JSON and URL-encoded request bodies to 1 MB.
+- Added a per-IP authentication-route rate limiter with 15-minute windows and standard rate-limit response headers.
+- The limiter is intentionally process-local. It is suitable only as an interim control for a single API instance; production horizontal scaling requires a shared rate-limit store and deliberate trusted-proxy configuration.
+- These controls do not replace a full security assessment, WAF/edge protection, distributed abuse detection, or secure deployment configuration.
