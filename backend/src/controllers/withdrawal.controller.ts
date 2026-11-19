@@ -26,7 +26,7 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
     return res.status(403).json({ message: 'Account is self-excluded' });
   }
   if (!req.jurisdictionCode) return res.status(403).json({ message: 'Trusted jurisdiction verification is required' });
-  const pending = await WithdrawalRequest.findOne({ userId: req.userId, status: { $in: ['reserved','approved','submitted'] } }).lean();
+  const pending = await WithdrawalRequest.findOne({ userId: req.userId, status: { $in: ['reserved','approved','submitted','review'] } }).lean();
   if (pending) return res.status(409).json({ message: 'An existing withdrawal is still being processed' });
   const beneficiary = await PayoutBeneficiary.findOne({ _id: beneficiaryId, userId: req.userId, currency, status: 'verified' }).select('+providerReference').lean();
   if (!beneficiary) return res.status(403).json({ message: 'A verified beneficiary matching the withdrawal currency is required' });
