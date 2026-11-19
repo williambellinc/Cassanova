@@ -18,6 +18,7 @@ export default function GameDetailPage() {
   const [error, setError] = useState('');
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [launchNotice, setLaunchNotice] = useState('');
 
   useEffect(() => {
     const fetchGameData = async () => {
@@ -60,8 +61,9 @@ export default function GameDetailPage() {
       router.push('/login');
       return;
     }
-    // In a real app, this would launch the game
-    alert(`Launching ${game?.title} in ${mode} mode!`);
+    setLaunchNotice(mode === 'real'
+      ? 'Real-money play is disabled. No licensed operator or game-provider launch integration is configured.'
+      : 'A playable demo session is not yet available for this title. Game launch integration is still being implemented.');
   };
 
   const handleToggleFavorite = async () => {
@@ -171,6 +173,7 @@ export default function GameDetailPage() {
                 <p className="text-gray-300 mb-6 leading-relaxed">{game.description}</p>
 
                 {/* Play Buttons */}
+                {launchNotice && <div className="w-full mb-4 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-100" role="status">{launchNotice}</div>}
                 <div className="flex flex-wrap gap-4">
                   <button
                     onClick={() => handlePlayGame('real')}
