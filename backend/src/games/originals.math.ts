@@ -26,3 +26,23 @@ export function crashPoint() {
   const value = bytes.readUIntBE(0, 6) / 2 ** 48;
   return Math.max(1, Math.min(1000, Math.floor((0.99 / (1 - value)) * 100) / 100));
 }
+
+
+export function calculateDiceOutcome(rollHundredths: number, targetHundredths: number, direction: 'over' | 'under') {
+  if (!Number.isInteger(rollHundredths) || rollHundredths < 0 || rollHundredths > 9999 ||
+      !Number.isInteger(targetHundredths) || targetHundredths < 1 || targetHundredths > 9999 ||
+      !['over', 'under'].includes(direction)) {
+    throw new Error('Invalid Dice outcome inputs');
+  }
+  const winningOutcomes = direction === 'over' ? 10000 - targetHundredths : targetHundredths + 1;
+  const winProbability = winningOutcomes / 10000;
+  const won = direction === 'over' ? rollHundredths >= targetHundredths : rollHundredths <= targetHundredths;
+  return {
+    roll: rollHundredths / 100,
+    target: targetHundredths / 100,
+    direction,
+    result: won ? 'win' : 'loss',
+    winProbability,
+    multiplier: Number((0.99 / winProbability).toFixed(4)),
+  };
+}
