@@ -13,7 +13,7 @@ export async function processVerifiedPayoutEvent(event: VerifiedPayoutEvent) {
   if (!withdrawal) throw new Error('Payout withdrawal not found; hold event for reconciliation');
   if (withdrawal.providerPayoutId && withdrawal.providerPayoutId !== event.providerPayoutId) throw new Error('Provider payout ID mismatch');
   if (withdrawal.amountMinor !== event.amountMinor || withdrawal.currency !== event.currency) throw new Error('Payout amount or currency mismatch');
-  if (!['submitted','approved'].includes(withdrawal.status)) {
+  if (!['submitted','approved','review'].includes(withdrawal.status)) {
     if (withdrawal.status === 'paid' && event.status === 'paid') return { duplicate: true, processed: true };
     throw new Error('Withdrawal is not in a settleable state');
   }
