@@ -81,7 +81,8 @@ export async function postLedgerEntry(input: {
       const ids = input.lines.map(line => new mongoose.Types.ObjectId(line.accountId));
       const accounts = await LedgerAccount.find({ _id: { $in: ids } }).session(session);
       if (accounts.length !== input.lines.length) throw new LedgerError('One or more ledger accounts do not exist', 'ACCOUNT_NOT_FOUND');
-      const byId = new Map(accounts.map(account => [account._id.toString(), account]));
+      const byId = new Map<string, typeof accounts[number]>();
+      for (const account of accounts) byId.set(account._id.toString(), account);
       for (const line of input.lines) {
         const account = byId.get(line.accountId);
         if (!account) throw new LedgerError('Ledger account not found', 'ACCOUNT_NOT_FOUND');
