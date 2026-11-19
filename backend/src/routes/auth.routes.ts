@@ -12,8 +12,13 @@ import {
   get2FAStatus
 } from '../controllers/auth.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
+import { createRateLimiter } from '../middleware/security.middleware';
 
 const router = Router();
+
+// Per-process protection for credential and account-recovery endpoints.
+// Replace with a shared store before running multiple API instances.
+router.use(createRateLimiter({ windowMs: 15 * 60 * 1000, max: 40, message: 'Too many authentication requests. Try again in 15 minutes.' }));
 
 router.post('/register', register);
 router.post('/login', login);
