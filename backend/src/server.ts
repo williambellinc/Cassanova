@@ -12,6 +12,7 @@ import transactionRoutes from './routes/transaction.routes';
 import originalsRoutes from './routes/originals.routes';
 import paymentWebhookRoutes from './routes/payment-webhook.routes';
 import paymentRoutes from './routes/payment.routes';
+import complianceRoutes from './routes/compliance.routes';
 import { securityHeaders } from './middleware/security.middleware';
 import { registerPaymentProvider } from './payments/payment-provider.contract';
 import { FlutterwaveV3Adapter } from './payments/flutterwave-v3.adapter';
@@ -42,6 +43,7 @@ app.use(cors({
 }));
 // Raw body must reach the payment verifier unchanged; mount before JSON parsing.
 app.use('/api/payments/webhooks', paymentWebhookRoutes);
+app.use('/api/compliance', complianceRoutes);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
