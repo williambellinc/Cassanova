@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🎰 Cassanova Casino
+# VELT — by Suppple Group Plc
 
-### Modern Full-Stack Online Casino Platform
+### Gaming platform foundation
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
@@ -11,7 +11,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-8-47A248?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 
-[![CI](https://github.com/GizzZmo/Cassanova/actions/workflows/ci.yml/badge.svg)](https://github.com/GizzZmo/Cassanova/actions/workflows/ci.yml)
+[![CI](https://github.com/williambellinc/Cassanova/actions/workflows/ci.yml/badge.svg)](https://github.com/GizzZmo/Cassanova/actions/workflows/ci.yml)
 [![Backend Build](https://img.shields.io/github/actions/workflow/status/GizzZmo/Cassanova/ci.yml?branch=main&label=Backend&logo=node.js)](https://github.com/GizzZmo/Cassanova/actions/workflows/ci.yml)
 [![Frontend Build](https://img.shields.io/github/actions/workflow/status/GizzZmo/Cassanova/ci.yml?branch=main&label=Frontend&logo=next.js)](https://github.com/GizzZmo/Cassanova/actions/workflows/ci.yml)
 
@@ -23,7 +23,7 @@
 
 ## 📖 About
 
-**Cassanova Casino** is a cutting-edge, full-stack online casino platform designed as a demonstration of modern web development practices. Built with the latest technologies including Next.js 15, React 19, and MongoDB, this project showcases a complete casino website implementation with a professional UI/UX, robust backend API, and comprehensive feature set.
+**VELT** is Suppple Group Plc's gaming platform initiative, being developed from the Cassanova open-source foundation. This fork is an engineering work-in-progress; inherited screens and endpoints are not production-ready gaming, payment or wallet services. Built with the latest technologies including Next.js 15, React 19, and MongoDB, this project showcases a complete casino website implementation with a professional UI/UX, robust backend API, and comprehensive feature set.
 
 > **⚠️ Important Note**: This is a demonstration project for educational purposes. For production deployment, ensure proper gaming licenses, payment integrations, and regulatory compliance.
 
@@ -97,7 +97,7 @@
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/GizzZmo/Cassanova.git
+git clone https://github.com/williambellinc/Cassanova.git
 cd Cassanova
 ```
 
@@ -121,7 +121,7 @@ npm run dev
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:5000
 
-For detailed setup instructions, see [QUICKSTART.md](QUICKSTART.md).
+For detailed setup instructions, see [QUICKSTART.md](QUICKSTART.md). See [VELT Platform Foundation](docs/VELT_PLATFORM_FOUNDATION.md) for architecture, security controls and release gates.
 
 ## 📸 Demo
 
@@ -366,7 +366,7 @@ We welcome contributions! Please see our [Contributing Guidelines](docs/CONTRIBU
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-**Educational & Demonstration Purposes Only**: This software is provided as-is for learning and demonstration. Production use requires proper gaming licenses, compliance with gambling regulations, and integration with licensed payment and gaming providers.
+**Important:** Real-money play must remain disabled until operator and product authorisations are verified for each target jurisdiction. No live payment provider, payout rail or certified game provider is currently configured.
 
 ## 👥 Authors
 
@@ -390,6 +390,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **⭐ Star this repository if you find it helpful!**
 
-Made with ❤️ by [GizzZmo](https://github.com/GizzZmo)
+VELT is a Suppple Group Plc platform initiative. This repository is a fork of [GizzZmo/Cassanova](https://github.com/GizzZmo/Cassanova).
 
 </div>

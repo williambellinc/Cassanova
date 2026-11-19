@@ -6,8 +6,7 @@ import crypto from 'crypto';
 import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
 import { AuthRequest } from '../middleware/auth.middleware';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+import { getUserLedgerWalletBalances } from '../services/ledger.service';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -52,6 +51,8 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) return res.status(503).json({ message: 'Authentication is not configured' });
     const { email, password, twoFactorCode } = req.body;
 
     // Find user
@@ -99,8 +100,24 @@ export const login = async (req: Request, res: Response) => {
       }
     }
 
+    let balance = user.balance;
+    let bonusBalance = user.bonusBalance;
+    let walletCurrency: string | undefined;
+    if (process.env.WALLET_LEDGER_READS_ENABLED === 'true') {
+      const currency = process.env.LEDGER_DEFAULT_CURRENCY;
+      if (!currency) return res.status(503).json({ message: 'Ledger wallet currency is not configured' });
+      const ledgerWallet = await getUserLedgerWalletBalances(String(user._id), currency);
+      if ((user.balance > 0 && !ledgerWallet.walletAccountFound) ||
+          (user.bonusBalance > 0 && !ledgerWallet.bonusAccountFound)) {
+        return res.status(503).json({ message: 'Wallet migration is incomplete; account access is temporarily unavailable' });
+      }
+      balance = ledgerWallet.balanceMinor / 100;
+      bonusBalance = ledgerWallet.bonusBalanceMinor / 100;
+      walletCurrency = ledgerWallet.currency;
+    }
+
     // Generate JWT token
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ userId: user._id }, jwtSecret, { expiresIn: '24h' });
 
     res.json({
       message: 'Login successful',
@@ -109,8 +126,9 @@ export const login = async (req: Request, res: Response) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        balance: user.balance,
-        bonusBalance: user.bonusBalance,
+        balance,
+        bonusBalance,
+        ...(walletCurrency ? { currency: walletCurrency } : {}),
         vipLevel: user.vipLevel,
         twoFactorEnabled: user.twoFactorEnabled,
       },

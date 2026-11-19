@@ -13,14 +13,20 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-              🎰 Cassanova
+              🎰 VELT
             </div>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link href="/games" className="hover:text-yellow-400 transition-colors font-medium">
-              Games
+              Casino
+            </Link>
+            <Link href="/casino-practice" className="hover:text-yellow-400 transition-colors font-medium">\n              Casino Practice\n            </Link>\n            <Link href="/arcade" className="hover:text-yellow-400 transition-colors font-medium">
+              Arcade
+            </Link>
+            <Link href="/originals" className="hover:text-yellow-400 transition-colors font-medium">
+              Originals
             </Link>
             <Link href="/live-casino" className="hover:text-yellow-400 transition-colors font-medium">
               Live Casino
@@ -69,7 +75,13 @@ export default function Header() {
           <div className="md:hidden py-4 border-t border-white/10">
             <nav className="flex flex-col space-y-4">
               <Link href="/games" className="hover:text-yellow-400 transition-colors">
-                Games
+                Casino
+              </Link>
+              <Link href="/casino-practice" className="hover:text-yellow-400 transition-colors">\n                Casino Practice\n              </Link>\n              <Link href="/arcade" className="hover:text-yellow-400 transition-colors">
+                Arcade
+              </Link>
+              <Link href="/originals" className="hover:text-yellow-400 transition-colors">
+                Originals
               </Link>
               <Link href="/live-casino" className="hover:text-yellow-400 transition-colors">
                 Live Casino

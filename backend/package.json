@@ -6,7 +6,9 @@
     "dev": "nodemon src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run build && node --test tests/*.test.cjs",
+    "migrate:wallets": "npm run build && node dist/scripts/migrate-legacy-wallets.js",
+    "reconcile:wallets": "npm run build && node dist/scripts/reconcile-legacy-wallets.js"
   },
   "keywords": [
     "casino",

@@ -2,9 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 'feature/**' ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   backend:
@@ -25,8 +26,8 @@ jobs:
       - name: Install backend dependencies
         run: cd backend && npm ci
       
-      - name: Build backend
-        run: cd backend && npm run build
+      - name: Build and test backend
+        run: cd backend && npm test
       
       - name: Check build output
         run: |

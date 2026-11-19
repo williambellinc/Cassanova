@@ -9,17 +9,50 @@ import gameRoutes from './routes/game.routes';
 import userRoutes from './routes/user.routes';
 import promotionRoutes from './routes/promotion.routes';
 import transactionRoutes from './routes/transaction.routes';
+import originalsRoutes from './routes/originals.routes';
+import casinoPracticeRoutes from './routes/casino-practice.routes';
+import paymentWebhookRoutes from './routes/payment-webhook.routes';
+import paymentRoutes from './routes/payment.routes';
+import complianceRoutes from './routes/compliance.routes';
+import { receiveSumsubWebhook } from './compliance/sumsub.controller';
+import { securityHeaders } from './middleware/security.middleware';
+import { registerPaymentProvider } from './payments/payment-provider.contract';
+import { FlutterwaveV3Adapter } from './payments/flutterwave-v3.adapter';
+import { PaystackAdapter } from './payments/paystack.adapter';
 
 dotenv.config();
 
+if (process.env.FLW_SECRET_KEY && process.env.FLW_WEBHOOK_SECRET_HASH) {
+  registerPaymentProvider(new FlutterwaveV3Adapter(process.env.FLW_SECRET_KEY, process.env.FLW_WEBHOOK_SECRET_HASH));
+}
+if (process.env.PAYSTACK_SECRET_KEY) registerPaymentProvider(new PaystackAdapter(process.env.PAYSTACK_SECRET_KEY, process.env.PAYSTACK_WEBHOOK_SECRET));
+
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/cassanova';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/velt';
 
 // Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.disable('x-powered-by');
+if (process.env.TRUSTED_PROXY_HOPS) {
+  const hops = Number(process.env.TRUSTED_PROXY_HOPS);
+  if (!Number.isInteger(hops) || hops < 1 || hops > 5) throw new Error('TRUSTED_PROXY_HOPS must be an integer from 1 to 5');
+  app.set('trust proxy', hops);
+}
+app.use(securityHeaders);
+const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000')
+  .split(',').map((origin) => origin.trim()).filter(Boolean);
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Origin not allowed by CORS'));
+  },
+  credentials: true,
+}));
+// Raw body must reach the payment verifier unchanged; mount before JSON parsing.
+app.use('/api/payments/webhooks', paymentWebhookRoutes);
+app.post('/api/compliance/webhooks/sumsub', express.raw({ type: 'application/json', limit: '256kb' }), receiveSumsubWebhook);
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -27,10 +60,14 @@ app.use('/api/games', gameRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/promotions', promotionRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/originals', originalsRoutes);
+app.use('/api/casino-practice', casinoPracticeRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/compliance', complianceRoutes);
 
 // Health check
 app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ status: 'OK', message: 'Cassanova API is running' });
+  res.json({ status: 'OK', message: 'VELT API is running' });
 });
 
 // Database connection
