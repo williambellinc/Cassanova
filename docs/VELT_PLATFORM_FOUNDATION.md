@@ -117,7 +117,7 @@ This repository is an inherited demonstration casino application. Its existing s
 ### VELT Originals
 
 - Added practice-mode Dice, Mines (5x5), Plinko (8 rows) and Crash endpoints, plus round history.
-- Server-side outcomes use Node cryptographic randomness. Mines hides its board until picks are made; Plinko uses an eight-row binomial distribution with approximately 99.0625% theoretical return; Crash uses a capped 99% theoretical-return distribution.
+- Server-side outcomes use Node cryptographic randomness. Mines hides its board until picks are made; Plinko uses an eight-row binomial distribution with 99% theoretical return; Crash uses a capped 99% theoretical-return distribution.
 - Added a four-game frontend at `/originals`.
 - All four games remain non-monetary practice games. The probability models are implementation estimates and require independent RNG/game-math certification before any real-money deployment.
 
@@ -127,3 +127,7 @@ This repository is an inherited demonstration casino application. Its existing s
 - No production wallet migration has been run or reconciled.
 - No jurisdictional licence evidence, geolocation provider, KYC/AML integration, self-exclusion enforcement, age verification, limits enforcement or independent game certification has been verified.
 - South African remote interactive casino gaming is not enabled by this change. Jurisdiction and product authorisation must be established before any real-money switch is considered.
+
+
+- Dice now uses an over/under target mechanic on a 0.00–99.99 scale with server-generated rolls and a 1% theoretical house edge.
+- The consolidated practice interface is available at `/originals`; the standalone Dice page remains at `/originals/dice`.
