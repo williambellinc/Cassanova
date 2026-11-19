@@ -17,7 +17,7 @@ test('Crash generator returns a bounded multiplier of at least 1.00x', () => {
   for (let i = 0; i < 1000; i++) {
     const point = crashPoint();
     assert.ok(point >= 1 && point <= 1000);
-    assert.equal(Math.round(point * 100), point * 100);
+    assert.ok(Math.abs(point * 100 - Math.round(point * 100)) < 1e-8);
   }
 });
 
