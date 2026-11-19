@@ -105,8 +105,43 @@ export const api = {
 
   // VELT Originals practice endpoints (no wallet or real-money functionality)
   originals: {
-    rollDiceDemo: async () => {
-      const response = await fetch(`${API_BASE_URL}/originals/dice/demo`, { method: 'POST' });
+    rollDiceDemo: async (data: { target?: number; direction?: 'over' | 'under' } = {}) => {
+      const response = await fetch(`${API_BASE_URL}/originals/dice/demo`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
+      });
+      return response.json();
+    },
+    startMinesDemo: async (mineCount = 3) => {
+      const response = await fetch(`${API_BASE_URL}/originals/mines/demo/start`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mineCount }),
+      });
+      return response.json();
+    },
+    pickMinesDemo: async (roundReference: string, position: number) => {
+      const response = await fetch(`${API_BASE_URL}/originals/mines/demo/${roundReference}/pick`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ position }),
+      });
+      return response.json();
+    },
+    cashoutMinesDemo: async (roundReference: string) => {
+      const response = await fetch(`${API_BASE_URL}/originals/mines/demo/${roundReference}/cashout`, { method: 'POST' });
+      return response.json();
+    },
+    playPlinkoDemo: async () => {
+      const response = await fetch(`${API_BASE_URL}/originals/plinko/demo`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: 8 }),
+      });
+      return response.json();
+    },
+    playCrashDemo: async (cashoutAt = 2) => {
+      const response = await fetch(`${API_BASE_URL}/originals/crash/demo`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cashoutAt }),
+      });
+      return response.json();
+    },
+    getHistory: async (game?: 'dice' | 'mines' | 'plinko' | 'crash') => {
+      const query = game ? `?game=velt-${game}` : '';
+      const response = await fetch(`${API_BASE_URL}/originals/history${query}`);
       return response.json();
     },
   },
