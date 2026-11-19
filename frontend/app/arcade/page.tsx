@@ -32,7 +32,6 @@ export default function VeltArcadePage() {
   const [difficulty, setDifficulty] = useState<Difficulty>('hard');
   const [snake, setSnake] = useState<Point[]>([{ x: 8, y: 9 }, { x: 7, y: 9 }, { x: 6, y: 9 }]);
   const [food, setFood] = useState<Point>({ x: 12, y: 9 });
-  const [direction, setDirection] = useState<Point>({ x: 1, y: 0 });
   const [snakeState, setSnakeState] = useState<'ready' | 'running' | 'over'>('ready');
   const [score, setScore] = useState(0);
   const directionRef = useRef(direction);
@@ -47,7 +46,7 @@ export default function VeltArcadePage() {
 
   const resetSnake = useCallback(() => {
     setSnake([{ x: 8, y: 9 }, { x: 7, y: 9 }, { x: 6, y: 9 }]);
-    setFood({ x: 12, y: 9 }); setDirection({ x: 1, y: 0 }); directionRef.current = { x: 1, y: 0 };
+    setFood({ x: 12, y: 9 }); directionRef.current = { x: 1, y: 0 };
     setScore(0); setSnakeState('ready');
   }, []);
 
@@ -90,7 +89,7 @@ export default function VeltArcadePage() {
       event.preventDefault();
       const current = directionRef.current;
       if (next.x !== -current.x || next.y !== -current.y) {
-        directionRef.current = next; setDirection(next);
+        directionRef.current = next;
         if (snakeState === 'ready') setSnakeState('running');
       }
     };
