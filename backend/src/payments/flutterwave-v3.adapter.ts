@@ -96,6 +96,17 @@ export class FlutterwaveV3Adapter implements PaymentProviderAdapter {
     };
   }
 
+  async createBeneficiary(input: { name:string; accountNumber:string; bankCode:string; currency:string }): Promise<{providerReference:string;verifiedName:string}> {
+    const response = await fetch(this.baseUrl + '/beneficiaries', {
+      method:'POST', headers:{Authorization:'Bearer '+this.secretKey,'Content-Type':'application/json'},
+      body:JSON.stringify({account_bank:input.bankCode,account_number:input.accountNumber,beneficiary_name:input.name,currency:input.currency}),
+    });
+    const payload=await response.json() as any;
+    const data=payload?.data;
+    if(!response.ok||payload?.status!=='success'||!data?.id||!data?.full_name) throw new Error(payload?.message||'Flutterwave beneficiary creation or account-name resolution failed');
+    return {providerReference:String(data.id),verifiedName:String(data.full_name)};
+  }
+
   async parsePayoutWebhook(rawBody: Buffer) {
     const hook = JSON.parse(rawBody.toString('utf8')) as any, data = hook?.data;
     if (!data?.id || !data?.reference || !data?.currency || !Number.isFinite(Number(data?.amount))) throw new Error('Flutterwave payout event is missing transfer details');
