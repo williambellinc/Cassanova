@@ -5,6 +5,7 @@ export interface IWithdrawalRequest extends Document {
   beneficiaryId: mongoose.Types.ObjectId;
   provider: string;
   currency: string;
+  jurisdictionCode: string;
   amountMinor: number;
   feeMinor: number;
   status: 'reserved' | 'approved' | 'submitted' | 'paid' | 'failed' | 'rejected';
@@ -21,6 +22,7 @@ const schema = new Schema<IWithdrawalRequest>({
   beneficiaryId: { type: Schema.Types.ObjectId, required: true, immutable: true },
   provider: { type: String, required: true, immutable: true },
   currency: { type: String, required: true, uppercase: true, immutable: true },
+  jurisdictionCode: { type: String, required: true, uppercase: true, immutable: true },
   amountMinor: { type: Number, required: true, min: 1, immutable: true },
   feeMinor: { type: Number, required: true, min: 0, default: 0, immutable: true },
   status: { type: String, enum: ['reserved','approved','submitted','paid','failed','rejected'], default: 'reserved', required: true },
