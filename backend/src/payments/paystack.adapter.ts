@@ -5,7 +5,7 @@ import { PaymentProviderAdapter, VerifiedPaymentEvent } from './payment-provider
 export class PaystackAdapter implements PaymentProviderAdapter {
   readonly providerId = 'paystack';
   private readonly baseUrl = 'https://api.paystack.co';
-  constructor(private readonly secretKey: string) { if (!secretKey) throw new Error('Paystack secret key is required'); }
+  constructor(private readonly secretKey: string, private readonly webhookSecret?: string) { if (!secretKey) throw new Error('Paystack secret key is required'); }
 
   async verifyWebhook(rawBody: Buffer, signature: string): Promise<boolean> {
     if (!signature) return false;
@@ -15,7 +15,8 @@ export class PaystackAdapter implements PaymentProviderAdapter {
       const candidates = parts.filter(v => v.startsWith('v1=')).map(v => v.slice(3).split(':').pop() || '');
       const seconds = Number(timestamp);
       if (!Number.isFinite(seconds) || Math.abs(Date.now() / 1000 - seconds) > 300) return false;
-      const expected = createHmac('sha512', this.secretKey).update(String(timestamp) + '.').update(rawBody).digest('hex');
+      if (!this.webhookSecret) return false;
+      const expected = createHmac('sha512', this.webhookSecret).update(String(timestamp) + '.').update(rawBody).digest('hex');
       return candidates.some(v => { if (!/^[a-f0-9]{128}$/i.test(v)) return false; const a=Buffer.from(v,'hex'), b=Buffer.from(expected,'hex'); return a.length===b.length && timingSafeEqual(a,b); });
     }
     const expected = createHmac('sha512', this.secretKey).update(rawBody).digest('hex');
