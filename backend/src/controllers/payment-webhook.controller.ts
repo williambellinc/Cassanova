@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
-import { getConfiguredWebhookAdapter } from '../payments/canonical-hmac.adapter';
+import { paymentProviders } from '../payments/payment-provider.contract';
 import { processVerifiedPaymentEvent } from '../payments/payment-settlement.service';
 
 export const receivePaymentWebhook = async (req: Request, res: Response) => {
-  const adapter = getConfiguredWebhookAdapter();
+  const providerId = process.env.PAYMENT_PROVIDER_ID;
+  const adapter = providerId ? paymentProviders.get(providerId) : null;
   if (!adapter) return res.status(503).json({ message: 'No payment webhook provider is configured' });
   if (!Buffer.isBuffer(req.body)) return res.status(400).json({ message: 'Raw webhook body is required' });
-  const signature = req.header('x-velt-signature') || '';
+  const signature = (providerId === 'flutterwave' ? req.header('verif-hash') : req.header('x-velt-signature')) || '';
   const timestamp = req.header('x-velt-timestamp') || '';
   try {
     const verified = await adapter.verifyWebhook(req.body, signature, timestamp);
