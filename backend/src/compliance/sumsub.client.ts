@@ -5,13 +5,15 @@ const token = () => process.env.SUMSUB_APP_TOKEN;
 const secret = () => process.env.SUMSUB_SECRET_KEY;
 
 export async function sumsubRequest(method: string, path: string, body?: Record<string, unknown>) {
-  if (!token() || !secret()) throw new Error('Sumsub API credentials are not configured');
+  const appToken = token();
+  const appSecret = secret();
+  if (!appToken || !appSecret) throw new Error('Sumsub API credentials are not configured');
   const timestamp = Math.floor(Date.now() / 1000).toString();
   const bodyText = body ? JSON.stringify(body) : '';
-  const signature = createHmac('sha256', secret()).update(timestamp + method.toUpperCase() + path + bodyText).digest('hex');
+  const signature = createHmac('sha256', appSecret).update(timestamp + method.toUpperCase() + path + bodyText).digest('hex');
   const response = await fetch(baseUrl + path, {
     method, headers: {
-      'X-App-Token': token()!, 'X-App-Access-Sig': signature, 'X-App-Access-Ts': timestamp,
+      'X-App-Token': appToken, 'X-App-Access-Sig': signature, 'X-App-Access-Ts': timestamp,
       'Content-Type': 'application/json',
     }, ...(body ? { body: bodyText } : {}),
     signal: AbortSignal.timeout(10000),
