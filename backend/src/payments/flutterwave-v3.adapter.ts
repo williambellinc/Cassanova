@@ -31,6 +31,8 @@ export class FlutterwaveV3Adapter implements PaymentProviderAdapter {
     if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor <= 0) throw new Error('Invalid amountMinor');
     // VELT stores supported two-decimal currencies in minor units. Currency
     // eligibility is separately constrained by the operator's Flutterwave account.
+    const twoDecimalCurrencies = new Set(['ZAR', 'NGN', 'GHS', 'KES', 'TZS', 'USD', 'GBP', 'EUR']);
+    if (!twoDecimalCurrencies.has(input.currency.toUpperCase())) throw new Error('Currency minor-unit mapping is not configured for this Flutterwave integration');
     const amount = input.amountMinor / 100;
     const response = await fetch(`${this.baseUrl}/payments`, {
       method: 'POST',
@@ -77,6 +79,7 @@ export class FlutterwaveV3Adapter implements PaymentProviderAdapter {
     const successful = transaction.status === 'successful';
     const failed = transaction.status === 'failed';
     if (!successful && !failed) throw new Error(`Flutterwave transaction is not final: ${transaction.status}`);
+    if (!new Set(['ZAR', 'NGN', 'GHS', 'KES', 'TZS', 'USD', 'GBP', 'EUR']).has(String(transaction.currency).toUpperCase())) throw new Error('Unsupported Flutterwave currency minor-unit mapping');
     const amountMinor = Math.round(Number(transaction.amount) * 100);
     if (!Number.isSafeInteger(amountMinor) || amountMinor <= 0) throw new Error('Invalid Flutterwave transaction amount');
 
@@ -100,6 +103,8 @@ export class FlutterwaveV3Adapter implements PaymentProviderAdapter {
     beneficiaryReference: string;
   }): Promise<{ providerPayoutId: string }> {
     if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor <= 0) throw new Error('Invalid payout amount');
+    const twoDecimalCurrencies = new Set(['ZAR', 'NGN', 'GHS', 'KES', 'TZS', 'USD', 'GBP', 'EUR']);
+    if (!twoDecimalCurrencies.has(input.currency.toUpperCase())) throw new Error('Currency minor-unit mapping is not configured for this Flutterwave integration');
     if (!/^\\d+$/.test(input.beneficiaryReference)) throw new Error('A Flutterwave beneficiary ID is required');
     const beneficiaryResponse = await fetch(`${this.baseUrl}/beneficiaries/${encodeURIComponent(input.beneficiaryReference)}`, {
       headers: { Authorization: `Bearer ${this.secretKey}` },
