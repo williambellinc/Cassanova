@@ -130,7 +130,7 @@ export default function VeltOriginalsPage() {
               <div className="mx-auto mt-6 grid max-w-md grid-cols-5 gap-2">
                 {Array.from({ length: 25 }, (_, i) => <button key={i} disabled={busy || mineStatus !== 'active' || revealed.includes(i)} onClick={() => pickMine(i)}
                   className={`aspect-square rounded-xl border text-lg font-black transition ${revealed.includes(i) ? 'border-cyan-300/40 bg-cyan-300/15 text-cyan-200' : 'border-white/10 bg-slate-800 hover:border-cyan-300/70 hover:bg-slate-700 disabled:opacity-50'}`}>
-                  {revealed.includes(i) ? '◆' : '·'}
+                  {revealed.includes(i) ? (result?.mineHit === i ? '✕' : '◆') : '·'}
                 </button>)}
               </div>
               <p className="mt-4 text-center text-sm text-slate-400">Round status: <b className="text-white">{mineStatus.replace('_', ' ')}</b></p>
