@@ -23,6 +23,7 @@ export interface IUser extends Document {
   passwordResetExpires?: Date;
   kycStatus: 'pending' | 'verified' | 'rejected';
   amlStatus: 'pending' | 'clear' | 'review' | 'blocked';
+  sumsubApplicantId?: string;
   kycDocuments?: string[];
   vipLevel: 'bronze' | 'silver' | 'gold' | 'platinum';
   responsibleGaming: {
@@ -76,6 +77,7 @@ const UserSchema: Schema = new Schema(
     },
     kycDocuments: [{ type: String }],
     amlStatus: { type: String, enum: ['pending', 'clear', 'review', 'blocked'], default: 'pending', required: true },
+    sumsubApplicantId: { type: String, unique: true, sparse: true, select: false },
     vipLevel: { 
       type: String, 
       enum: ['bronze', 'silver', 'gold', 'platinum'], 
