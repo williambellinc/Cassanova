@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import mongoose from 'mongoose';
 import { AuthRequest } from '../middleware/auth.middleware';
 import User from '../models/User';
+import ComplianceDecision from '../models/ComplianceDecision';
 import { createSumsubApplicant, createSumsubAccessToken, requestSumsubAmlRecheck } from './sumsub.client';
 
 export const createKycSession = async (req: AuthRequest, res: Response) => {
@@ -73,4 +74,22 @@ export const receiveSumsubWebhook = async (req: any, res: Response) => {
     console.error('Sumsub webhook processing failed:', error);
     return res.status(500).json({ message: 'Unable to process Sumsub webhook' });
   }
+};
+
+export const setAmlDisposition = async (req: AuthRequest, res: Response) => {
+  if (!req.userId || !mongoose.isValidObjectId(req.params.userId)) return res.status(400).json({ message: 'Valid user ID is required' });
+  const status = String(req.body?.status || '');
+  const reason = String(req.body?.reason || '').trim();
+  const evidenceReference = req.body?.evidenceReference ? String(req.body.evidenceReference).slice(0, 256) : undefined;
+  if (!['clear','review','blocked'].includes(status) || reason.length < 10 || reason.length > 2000) {
+    return res.status(400).json({ message: 'status must be clear, review or blocked, and a 10–2000 character reason is required' });
+  }
+  const user = await User.findById(req.params.userId);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  if (status === 'clear' && user.kycStatus !== 'verified') return res.status(409).json({ message: 'AML cannot be cleared before KYC is verified' });
+  const previousStatus = user.amlStatus;
+  await ComplianceDecision.create({ userId: user._id, actorId: req.userId, previousStatus, newStatus: status, reason, evidenceReference });
+  user.amlStatus = status as any;
+  await user.save();
+  return res.json({ userId: user._id, previousStatus, amlStatus: user.amlStatus, auditRecorded: true });
 };
