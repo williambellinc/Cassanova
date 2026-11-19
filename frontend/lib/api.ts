@@ -103,7 +103,15 @@ export const api = {
     },
   },
 
-  // VELT Originals practice endpoints (no wallet or real-money functionality)\n  originals: {\n    rollDiceDemo: async () => {\n      const response = await fetch(\`${'${API_BASE_URL}'}/originals/dice/demo\`, { method: 'POST' });\n      return response.json();\n    },\n  },\n\n  // Games endpoints
+  // VELT Originals practice endpoints (no wallet or real-money functionality)
+  originals: {
+    rollDiceDemo: async () => {
+      const response = await fetch(`${API_BASE_URL}/originals/dice/demo`, { method: 'POST' });
+      return response.json();
+    },
+  },
+
+  // Games endpoints
   games: {
     getAll: async (params?: { category?: string; search?: string }) => {
       const query = new URLSearchParams(params as Record<string, string>).toString();
