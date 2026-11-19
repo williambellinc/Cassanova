@@ -38,6 +38,14 @@ export async function createSumsubApplicant(input: { userId: string; email: stri
   return { applicantId: String(applicant.id), accessToken: String(access.token), levelName };
 }
 
+export async function createSumsubAccessToken(userId: string) {
+  const levelName = process.env.SUMSUB_KYC_LEVEL;
+  if (!levelName) throw new Error('SUMSUB_KYC_LEVEL is not configured');
+  const access = await sumsubRequest('POST', '/resources/accessTokens/sdk', { ttlInSecs: 600, userId, levelName });
+  if (!access?.token) throw new Error('Sumsub did not return an SDK access token');
+  return { accessToken: String(access.token), levelName };
+}
+
 export async function requestSumsubAmlRecheck(applicantId: string) {
   return sumsubRequest('POST', '/resources/applicants/' + encodeURIComponent(applicantId) + '/recheck/aml', {});
 }
