@@ -3,7 +3,7 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import mongoose from 'mongoose';
 import { AuthRequest } from '../middleware/auth.middleware';
 import User from '../models/User';
-import { createSumsubApplicant, requestSumsubAmlRecheck } from './sumsub.client';
+import { createSumsubApplicant, createSumsubAccessToken, requestSumsubAmlRecheck } from './sumsub.client';
 
 export const createKycSession = async (req: AuthRequest, res: Response) => {
   if (!req.userId) return res.status(401).json({ message: 'Authentication required' });
@@ -18,14 +18,8 @@ export const createKycSession = async (req: AuthRequest, res: Response) => {
       await user.save();
       return res.status(201).json({ accessToken: created.accessToken, levelName: created.levelName, status: user.kycStatus });
     }
-    const { createSumsubApplicant: unused } = await import('./sumsub.client');
-    void unused;
-    // Sumsub issues a short-lived applicant-bound SDK token.
-    const levelName = process.env.SUMSUB_KYC_LEVEL;
-    if (!levelName) return res.status(503).json({ message: 'Sumsub verification level is not configured' });
-    const { sumsubRequest } = await import('./sumsub.client');
-    const access = await sumsubRequest('POST', '/resources/accessTokens/sdk', { ttlInSecs: 600, userId: String(user._id), levelName });
-    return res.json({ accessToken: access.token, levelName, status: user.kycStatus });
+    const access = await createSumsubAccessToken(String(user._id));
+    return res.json({ ...access, status: user.kycStatus });
   } catch (error) {
     console.error('Sumsub KYC session error:', error);
     return res.status(502).json({ message: 'Unable to create identity verification session' });
