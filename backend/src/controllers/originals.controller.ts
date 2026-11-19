@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { randomBytes, randomInt, randomUUID } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
 import GameRound from '../models/GameRound';
+import { PLINKO_MULTIPLIERS, minesMultiplier, plinkoExpectedReturn, crashPoint } from '../games/originals.math';
 
 /**
  * All VELT Originals endpoints in this module are PRACTICE-ONLY.
@@ -32,12 +33,6 @@ const shuffle = (values: number[]) => {
     [values[i], values[j]] = [values[j], values[i]];
   }
   return values;
-};
-
-const minesMultiplier = (mineCount: number, safePicks: number) => {
-  let probability = 1;
-  for (let i = 0; i < safePicks; i++) probability *= (25 - mineCount - i) / (25 - i);
-  return Number((0.99 / probability).toFixed(4));
 };
 
 export const startMinesDemo = async (req: Request, res: Response) => {
@@ -123,8 +118,6 @@ export const cashoutMinesDemo = async (req: Request, res: Response) => {
   }
 };
 
-const PLINKO_MULTIPLIERS = [5.8, 2.5, 1.25, 0.9, 0.5, 0.9, 1.25, 2.5, 5.8] as const;
-// Eight-row binomial distribution; weighted expected return is approximately 99.06%.
 export const playPlinkoDemo = async (req: Request, res: Response) => {
   try {
     const rows = Number(req.body?.rows ?? 8);
@@ -140,19 +133,13 @@ export const playPlinkoDemo = async (req: Request, res: Response) => {
     return res.status(201).json({
       roundReference: round.roundReference, gameCode: round.gameCode, mode: 'demo',
       outcome: { rows, path, slot, multiplier },
-      expectedReturn: 0.990625,
+      expectedReturn: plinkoExpectedReturn(),
       notice: 'Practice only. No stake or prize.',
     });
   } catch (error) {
     console.error('Plinko demo error:', error);
     return res.status(500).json({ message: 'Unable to generate Plinko practice round' });
   }
-};
-
-const crashPoint = () => {
-  const bytes = randomBytes(6);
-  const value = bytes.readUIntBE(0, 6) / 2 ** 48;
-  return Math.max(1, Math.min(1000, Math.floor((0.99 / (1 - value)) * 100) / 100));
 };
 
 export const playCrashDemo = async (req: Request, res: Response) => {
