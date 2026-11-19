@@ -37,4 +37,9 @@ export interface PaymentProviderAdapter {
 }
 
 /** Empty by design: configure only after contracting and testing a real provider. */
-export const paymentProviders: ReadonlyMap<string, PaymentProviderAdapter> = new Map();
+const providerRegistry = new Map<string, PaymentProviderAdapter>();
+export const paymentProviders: ReadonlyMap<string, PaymentProviderAdapter> = providerRegistry;
+export function registerPaymentProvider(adapter: PaymentProviderAdapter) {
+  if (providerRegistry.has(adapter.providerId)) throw new Error(`Payment provider already registered: ${adapter.providerId}`);
+  providerRegistry.set(adapter.providerId, adapter);
+}
