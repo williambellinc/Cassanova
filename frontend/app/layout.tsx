@@ -5,8 +5,8 @@ import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
-  title: "Cassanova - Online Casino | Best Slots & Live Casino Games",
-  description: "Join Cassanova Casino for the best online gaming experience. Get 200% bonus up to $500 + 100 free spins. Play 1000+ slots, table games, and live dealer games.",
+  title: "VELT | Games, Arcade & Casino",
+  description: "VELT is a modular gaming platform featuring original casino games, arcade challenges and skill-based entertainment.",
 };
 
 export default function RootLayout({
