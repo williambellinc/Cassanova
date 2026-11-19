@@ -137,7 +137,7 @@ export class FlutterwaveV3Adapter implements PaymentProviderAdapter {
     });
     const beneficiaryPayload = await beneficiaryResponse.json() as any;
     const beneficiary = beneficiaryPayload?.data;
-    if (!beneficiaryResponse.ok || beneficiaryPayload?.status !== 'success' || !beneficiary?.account_bank || !beneficiary?.account_number) {
+    if (!beneficiaryResponse.ok || beneficiaryPayload?.status !== 'success' || !(beneficiary?.bank_code || beneficiary?.account_bank) || !beneficiary?.account_number) {
       throw new Error('Flutterwave beneficiary lookup failed');
     }
     if (String(beneficiary.currency || '').toUpperCase() !== input.currency.toUpperCase()) {
@@ -147,10 +147,10 @@ export class FlutterwaveV3Adapter implements PaymentProviderAdapter {
       method: 'POST',
       headers: { Authorization: `Bearer ${this.secretKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        account_bank: beneficiary.account_bank,
+        account_bank: beneficiary.bank_code || beneficiary.account_bank,
         account_number: beneficiary.account_number,
         beneficiary: Number(input.beneficiaryReference),
-        beneficiary_name: beneficiary.beneficiary_name,
+        beneficiary_name: beneficiary.full_name || beneficiary.beneficiary_name,
         amount: input.amountMinor / 100,
         currency: input.currency,
         reference: input.merchantReference,
