@@ -27,7 +27,7 @@ export class FlutterwaveV3Adapter implements PaymentProviderAdapter {
     currency: string;
     returnUrl: string;
     customerEmail: string;
-  }): Promise<{ providerPaymentId: string; redirectUrl?: string }> {
+  }): Promise<{ providerPaymentId?: string; redirectUrl?: string }> {
     if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor <= 0) throw new Error('Invalid amountMinor');
     // VELT stores supported two-decimal currencies in minor units. Currency
     // eligibility is separately constrained by the operator's Flutterwave account.
