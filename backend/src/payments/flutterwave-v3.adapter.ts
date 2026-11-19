@@ -105,7 +105,7 @@ export class FlutterwaveV3Adapter implements PaymentProviderAdapter {
     if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor <= 0) throw new Error('Invalid payout amount');
     const twoDecimalCurrencies = new Set(['ZAR', 'NGN', 'GHS', 'KES', 'TZS', 'USD', 'GBP', 'EUR']);
     if (!twoDecimalCurrencies.has(input.currency.toUpperCase())) throw new Error('Currency minor-unit mapping is not configured for this Flutterwave integration');
-    if (!/^\\d+$/.test(input.beneficiaryReference)) throw new Error('A Flutterwave beneficiary ID is required');
+    if (!/^\d+$/.test(input.beneficiaryReference)) throw new Error('A Flutterwave beneficiary ID is required');
     const beneficiaryResponse = await fetch(`${this.baseUrl}/beneficiaries/${encodeURIComponent(input.beneficiaryReference)}`, {
       headers: { Authorization: `Bearer ${this.secretKey}` },
     });
