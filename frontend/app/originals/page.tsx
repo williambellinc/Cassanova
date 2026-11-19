@@ -137,13 +137,13 @@ export default function VeltOriginalsPage() {
             </div>}
 
             {game === 'plinko' && <div className="text-center">
-              <h2 className="text-2xl font-black">Plinko</h2><p className="mt-1 text-sm text-slate-400">Eight rows · binomial slot distribution · 99.0625% theoretical return</p>
+              <h2 className="text-2xl font-black">Plinko</h2><p className="mt-1 text-sm text-slate-400">Eight rows · binomial slot distribution · 99% theoretical return</p>
               <div className="mx-auto mt-8 max-w-lg rounded-2xl bg-slate-950 p-5">
                 <div className="flex flex-wrap justify-center gap-2">
                   {(result?.outcome?.path || Array(8).fill(null)).map((direction: number | null, i: number) => <span key={i} className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-xs text-cyan-200">{direction === null ? '·' : direction ? '↘' : '↙'}</span>)}
                 </div>
                 <div className="mt-5 flex justify-center gap-1">
-                  {[5.8,2.5,1.25,0.9,0.5,0.9,1.25,2.5,5.8].map((m,i) => <span key={i} className={`flex-1 rounded-md px-1 py-3 text-[10px] font-bold ${result?.outcome?.slot === i ? 'bg-cyan-300 text-slate-950' : 'bg-slate-800 text-slate-300'}`}>{m}x</span>)}
+                  {[3.82,2.5,1.25,0.9,0.5,0.9,1.25,2.5,3.82].map((m,i) => <span key={i} className={`flex-1 rounded-md px-1 py-3 text-[10px] font-bold ${result?.outcome?.slot === i ? 'bg-cyan-300 text-slate-950' : 'bg-slate-800 text-slate-300'}`}>{m}x</span>)}
                 </div>
               </div>
               {result?.outcome && <p className="mt-5 text-2xl font-black text-cyan-300">Slot {result.outcome.slot} · {result.outcome.multiplier}x</p>}
