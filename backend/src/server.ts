@@ -11,6 +11,7 @@ import promotionRoutes from './routes/promotion.routes';
 import transactionRoutes from './routes/transaction.routes';
 import originalsRoutes from './routes/originals.routes';
 import paymentWebhookRoutes from './routes/payment-webhook.routes';
+import paymentRoutes from './routes/payment.routes';
 import { securityHeaders } from './middleware/security.middleware';
 
 dotenv.config();
@@ -43,6 +44,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/promotions', promotionRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/originals', originalsRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Health check
 app.get('/api/health', (req: Request, res: Response) => {
