@@ -35,6 +35,7 @@ export interface PaymentProviderAdapter {
     customerEmail: string;
   }): Promise<{ providerPaymentId?: string; redirectUrl?: string }>;
   parsePayoutWebhook?(rawBody: Buffer): Promise<VerifiedPayoutEvent>;
+  createBeneficiary?(input: { name: string; accountNumber: string; bankCode: string; currency: string }): Promise<{ providerReference: string; verifiedName: string }>;
   requestPayout(input: {
     merchantReference: string;
     amountMinor: number;
