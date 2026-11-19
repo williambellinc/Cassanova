@@ -9,6 +9,18 @@ export class LedgerError extends Error {
   }
 }
 
+export function validateBalancedLines(lines: Array<{ direction: 'debit' | 'credit'; amountMinor: number }>) {
+  if (lines.length < 2 || lines.some(line => !Number.isSafeInteger(line.amountMinor) || line.amountMinor <= 0)) {
+    throw new LedgerError('A journal requires at least two positive integer lines', 'INVALID_JOURNAL');
+  }
+  const debits = lines.filter(line => line.direction === 'debit').reduce((sum, line) => sum + line.amountMinor, 0);
+  const credits = lines.filter(line => line.direction === 'credit').reduce((sum, line) => sum + line.amountMinor, 0);
+  if (!Number.isSafeInteger(debits) || !Number.isSafeInteger(credits) || debits !== credits) {
+    throw new LedgerError('Journal debits and credits must balance exactly', 'UNBALANCED_JOURNAL');
+  }
+  return true;
+}
+
 export async function getOrCreateLedgerAccount(input: {
   ownerType: 'user' | 'system';
   ownerId: string;
@@ -60,13 +72,9 @@ export async function postLedgerTransfer(input: {
   }
 
   const currency = input.currency.toUpperCase();
-  const existing = await LedgerJournal.findOne({ idempotencyKey: input.idempotencyKey });
+  const expectedLines = [\n    { direction: 'debit' as const, amountMinor: input.amountMinor },\n    { direction: 'credit' as const, amountMinor: input.amountMinor },\n  ];\n  validateBalancedLines(expectedLines);\n  const matchesRequest = (entry: any) => entry.currency === currency && entry.reference === input.reference &&\n    entry.lines.length === 2 &&\n    entry.lines.some((line: any) => line.accountId.toString() === input.debitAccountId && line.direction === 'debit' && line.amountMinor === input.amountMinor) &&\n    entry.lines.some((line: any) => line.accountId.toString() === input.creditAccountId && line.direction === 'credit' && line.amountMinor === input.amountMinor);\n  const existing = await LedgerJournal.findOne({ idempotencyKey: input.idempotencyKey });
   if (existing) {
-    const same = existing.currency === currency &&
-      existing.lines.length === 2 &&
-      existing.lines.some(line => line.accountId.toString() === input.debitAccountId && line.direction === 'debit' && line.amountMinor === input.amountMinor) &&
-      existing.lines.some(line => line.accountId.toString() === input.creditAccountId && line.direction === 'credit' && line.amountMinor === input.amountMinor);
-    if (!same) throw new LedgerError('Idempotency key was already used for a different transfer', 'IDEMPOTENCY_CONFLICT');
+    if (!matchesRequest(existing)) throw new LedgerError('Idempotency key was already used for a different transfer', 'IDEMPOTENCY_CONFLICT');
     return existing;
   }
 
@@ -113,7 +121,8 @@ export async function postLedgerTransfer(input: {
   } catch (error: any) {
     if (error?.code === 11000) {
       const raced = await LedgerJournal.findOne({ idempotencyKey: input.idempotencyKey });
-      if (raced) return raced;
+      if (raced && matchesRequest(raced)) return raced;
+      if (raced) throw new LedgerError('Idempotency key was already used for a different transfer', 'IDEMPOTENCY_CONFLICT');
     }
     throw error;
   } finally {
