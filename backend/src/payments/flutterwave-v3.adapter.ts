@@ -140,9 +140,6 @@ export class FlutterwaveV3Adapter implements PaymentProviderAdapter {
     if (!beneficiaryResponse.ok || beneficiaryPayload?.status !== 'success' || !(beneficiary?.bank_code || beneficiary?.account_bank) || !beneficiary?.account_number) {
       throw new Error('Flutterwave beneficiary lookup failed');
     }
-    if (String(beneficiary.currency || '').toUpperCase() !== input.currency.toUpperCase()) {
-      throw new Error('Payout currency does not match verified beneficiary currency');
-    }
     const transferResponse = await fetch(`${this.baseUrl}/transfers`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${this.secretKey}`, 'Content-Type': 'application/json' },
