@@ -21,9 +21,9 @@ export function plinkoExpectedReturn() {
   return PLINKO_MULTIPLIERS.reduce((sum, multiplier, slot) => sum + choose(8, slot) / 256 * multiplier, 0);
 }
 
-export function crashPoint() {
-  const bytes = randomBytes(6);
-  const value = bytes.readUIntBE(0, 6) / 2 ** 48;
+export function crashPoint(randomValue?: number) {
+  const value = randomValue === undefined ? randomBytes(6).readUIntBE(0, 6) / 2 ** 48 : randomValue;
+  if (!Number.isFinite(value) || value < 0 || value >= 1) throw new Error('Crash entropy must be in [0, 1)');
   return Math.max(1, Math.min(1000, Math.floor((0.99 / (1 - value)) * 100) / 100));
 }
 
