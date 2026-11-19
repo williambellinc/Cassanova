@@ -187,8 +187,7 @@ export default function VeltArcadePage() {
 
   const clickWaste = () => {
     if (!waste.length) return;
-    if (selected?.pile === -1) setSelected(null);
-    else if (selected) moveToTableau(0);
+    if (selected) setSelected(null);
     else setSelected({ pile: -1, index: waste.length - 1 });
   };
 
@@ -232,7 +231,7 @@ export default function VeltArcadePage() {
             <label className="mt-5 block text-xs text-slate-400">Difficulty</label>
             <select value={difficulty} onChange={e => { setDifficulty(e.target.value as Difficulty); resetSnake(); }} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-3 text-white"><option value="easy">Easy · relaxed</option><option value="hard">Hard · fast</option><option value="expert">Expert · extreme</option></select>
             <div className="mt-5 rounded-xl bg-slate-950 p-4"><p className="text-xs uppercase tracking-widest text-slate-500">Game status</p><p className="mt-1 text-lg font-bold">{snakeState === 'ready' ? 'Ready' : snakeState === 'running' ? 'In progress' : 'Game over'}</p><p className="mt-1 text-sm text-slate-400">Speed: {SPEED[difficulty]}ms per move</p></div>
-            <button onClick={() => setSnakeState(s => s === 'running' ? 'ready' : 'running')} className="mt-5 w-full rounded-xl bg-cyan-300 px-4 py-3 font-black text-slate-950">{snakeState === 'running' ? 'Pause' : snakeState === 'over' ? 'Resume' : 'Start'}</button>
+            <button onClick={() => snakeState === 'over' ? resetSnake() : setSnakeState(s => s === 'running' ? 'ready' : 'running')} className="mt-5 w-full rounded-xl bg-cyan-300 px-4 py-3 font-black text-slate-950">{snakeState === 'running' ? 'Pause' : snakeState === 'over' ? 'Play again' : 'Start'}</button>
             <button onClick={resetSnake} className="mt-2 w-full rounded-xl border border-white/15 px-4 py-3 font-bold">New game</button>
             <p className="mt-5 text-xs leading-5 text-slate-500">Avoid the walls and your own tail. Each fruit adds ten points and one segment. Expert mode is deliberately unforgiving.</p>
           </aside>
