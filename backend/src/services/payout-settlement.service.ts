@@ -20,11 +20,6 @@ export async function processVerifiedPayoutEvent(event: VerifiedPayoutEvent) {
   const liability = await getOrCreateLedgerAccount({ ownerType:'system', ownerId:'velt-withdrawals', accountType:'withdrawal_liability', currency:event.currency });
   const wallet = await getOrCreateLedgerAccount({ ownerType:'user', ownerId:String(withdrawal.userId), accountType:'player_wallet', currency:event.currency });
   const clearing = await getOrCreateLedgerAccount({ ownerType:'system', ownerId:event.provider, accountType:'payment_clearing', currency:event.currency });
-  await PayoutEvent.create({
-    provider:event.provider, providerEventId:event.providerEventId, merchantReference:event.merchantReference,
-    providerPayoutId:event.providerPayoutId, amountMinor:event.amountMinor, currency:event.currency,
-    status:event.status, payloadHash:event.rawPayloadHash,
-  });
   if (event.status === 'paid') {
     await postLedgerEntry({
       lines:[{accountId:String(liability._id),direction:'debit',amountMinor:event.amountMinor},{accountId:String(clearing._id),direction:'credit',amountMinor:event.amountMinor}],
@@ -43,5 +38,10 @@ export async function processVerifiedPayoutEvent(event: VerifiedPayoutEvent) {
     withdrawal.status='failed'; withdrawal.failureReason='Provider confirmed payout failure; reserved funds released.';
   }
   await withdrawal.save();
+  await PayoutEvent.create({
+    provider:event.provider, providerEventId:event.providerEventId, merchantReference:event.merchantReference,
+    providerPayoutId:event.providerPayoutId, amountMinor:event.amountMinor, currency:event.currency,
+    status:event.status, payloadHash:event.rawPayloadHash,
+  });
   return {duplicate:false,processed:true,status:withdrawal.status};
 }
