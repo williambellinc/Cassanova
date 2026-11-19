@@ -6,6 +6,7 @@ export interface IPaymentIntent extends Document {
   merchantReference: string;
   providerPaymentId?: string;
   amountMinor: number;
+  refundedMinor: number;
   currency: string;
   status: 'pending' | 'settled' | 'failed' | 'refunded' | 'review';
   createdAt: Date;
@@ -18,6 +19,7 @@ const PaymentIntentSchema = new Schema<IPaymentIntent>({
   merchantReference: { type: String, required: true, unique: true, immutable: true },
   providerPaymentId: { type: String },
   amountMinor: { type: Number, required: true, min: 1, immutable: true },
+  refundedMinor: { type: Number, required: true, min: 0, default: 0 },
   currency: { type: String, required: true, uppercase: true, minlength: 3, maxlength: 3, immutable: true },
   status: { type: String, enum: ['pending', 'settled', 'failed', 'refunded', 'review'], default: 'pending', required: true },
 }, { timestamps: true, versionKey: false });
