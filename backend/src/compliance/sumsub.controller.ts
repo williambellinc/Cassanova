@@ -87,6 +87,7 @@ export const setAmlDisposition = async (req: AuthRequest, res: Response) => {
   const user = await User.findById(req.params.userId);
   if (!user) return res.status(404).json({ message: 'User not found' });
   if (status === 'clear' && user.kycStatus !== 'verified') return res.status(409).json({ message: 'AML cannot be cleared before KYC is verified' });
+  if (status === 'clear' && !evidenceReference) return res.status(400).json({ message: 'An evidence reference is required to clear an AML review' });
   const previousStatus = user.amlStatus;
   await ComplianceDecision.create({ userId: user._id, actorId: req.userId, previousStatus, newStatus: status, reason, evidenceReference });
   user.amlStatus = status as any;
