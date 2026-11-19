@@ -135,3 +135,14 @@ This repository is an inherited demonstration casino application. Its existing s
 
 - The provider event inbox records verified callbacks and retries incomplete processing idempotently. Provider settlement statements and bank files still need an operational reconciliation process.
 - Withdrawals and wagering are deliberately not activated. The payout adapter contract exists, but no payout provider, payout status callback, or licensed wagering flow is connected.
+
+
+## VELT Arcade and provider API integration
+
+- Added `/arcade` with a self-contained Snake game (Easy, Hard and Expert speed profiles) and Klondike Solitaire (Draw 1 and Draw 3). These are original implementations, free-to-play, with no wallet or prize integration.
+- Added Casino, Arcade and Originals navigation links and updated the global metadata to VELT.
+- Added a Flutterwave v3 adapter for hosted Standard checkout (`POST /v3/payments`), webhook secret-hash verification, server-to-server transaction verification (`GET /v3/transactions/:id/verify`), and bank-transfer payout initiation (`POST /v3/transfers`) using a provider beneficiary ID resolved through the Beneficiaries API.
+- Flutterwave is registered only when `PAYMENT_PROVIDER_ID=flutterwave`, `FLW_SECRET_KEY` and `FLW_WEBHOOK_SECRET_HASH` are configured. The webhook route uses Flutterwave's documented `verif-hash` header.
+- Amount conversion is explicitly limited to configured two-decimal currencies: ZAR, NGN, GHS, KES, TZS, USD, GBP and EUR. Other currencies fail closed pending an explicit minor-unit map.
+- The payout adapter is an API integration primitive, not a complete withdrawal product. Beneficiary ownership, KYC/AML, payout approval, wallet reservation/debit, transfer callback reconciliation, provider account enablement and jurisdiction authorization remain release gates.
+- The adapter requires real Flutterwave test/live credentials and merchant onboarding. No credentials have been supplied and no external payment or payout has been initiated.
