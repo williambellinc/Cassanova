@@ -10,6 +10,7 @@ import userRoutes from './routes/user.routes';
 import promotionRoutes from './routes/promotion.routes';
 import transactionRoutes from './routes/transaction.routes';
 import originalsRoutes from './routes/originals.routes';
+import casinoPracticeRoutes from './routes/casino-practice.routes';
 import paymentWebhookRoutes from './routes/payment-webhook.routes';
 import paymentRoutes from './routes/payment.routes';
 import complianceRoutes from './routes/compliance.routes';
@@ -60,6 +61,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/promotions', promotionRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/originals', originalsRoutes);
+app.use('/api/casino-practice', casinoPracticeRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/compliance', complianceRoutes);
 
