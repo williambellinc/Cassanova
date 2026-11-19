@@ -64,7 +64,7 @@ export const approveAndSubmitWithdrawal = async (req: AuthRequest, res: Response
   const withdrawal = await WithdrawalRequest.findById(req.params.withdrawalId);
   if (!withdrawal) return res.status(404).json({ message: 'Withdrawal not found' });
   if (String(withdrawal.userId) === req.userId) return res.status(403).json({ message: 'Maker-checker control: requester cannot approve their own withdrawal' });
-  if (withdrawal.status !== 'reserved' && withdrawal.status !== 'approved') return res.status(409).json({ message: 'Withdrawal is not awaiting approval or submission' });
+  if (withdrawal.status !== 'reserved') return res.status(409).json({ message: 'Withdrawal is not awaiting approval or submission' });
   const player = await User.findById(withdrawal.userId).select('kycStatus amlStatus dateOfBirth responsibleGaming').lean();
   if (!player || player.kycStatus !== 'verified' || player.amlStatus !== 'clear' || !player.dateOfBirth || new Date(player.dateOfBirth).getTime() > Date.now() - 18 * 365.25 * 86400000 || (player.responsibleGaming?.selfExclusionUntil && new Date(player.responsibleGaming.selfExclusionUntil) > new Date())) return res.status(403).json({ message: 'Player compliance eligibility changed; withdrawal held for review' });
   const policy = await JurisdictionPolicy.findOne({ jurisdictionCode: withdrawal.jurisdictionCode, operatorEntity: process.env.VELT_OPERATOR_ENTITY, status: 'enabled', permittedProducts: 'casino', licenceReference: { $exists: true, $ne: '' }, evidenceReviewedAt: { $exists: true }, effectiveFrom: { $lte: new Date() }, $or: [{ effectiveUntil: { $exists: false } }, { effectiveUntil: null }, { effectiveUntil: { $gt: new Date() } }] }).lean();
@@ -87,7 +87,10 @@ export const approveAndSubmitWithdrawal = async (req: AuthRequest, res: Response
     await withdrawal.save();
     return res.json({ withdrawalId: withdrawal._id, status: withdrawal.status, providerPayoutId: withdrawal.providerPayoutId, message: 'Provider accepted the payout instruction; funds remain reserved until independently verified settlement.' });
   } catch (error) {
-    console.error('Payout submission failed:', error);
-    return res.status(502).json({ withdrawalId: withdrawal._id, status: withdrawal.status, message: 'Provider submission failed. Funds remain reserved for controlled retry or reversal.' });
+    console.error('Payout submission failed; provider outcome may be unknown:', error);
+    withdrawal.status = 'review';
+    withdrawal.failureReason = 'Provider submission outcome is unknown. Reconcile provider transfer status before any retry.';
+    await withdrawal.save();
+    return res.status(502).json({ withdrawalId: withdrawal._id, status: withdrawal.status, message: 'Payout outcome is uncertain. Funds remain reserved and the request is held for provider reconciliation; do not retry blindly.' });
   }
 };
