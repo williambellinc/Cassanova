@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import User from '../models/User';
 import WalletMigrationSnapshot from '../models/WalletMigrationSnapshot';
 import { getOrCreateLedgerAccount, postLedgerEntry } from './ledger.service';
