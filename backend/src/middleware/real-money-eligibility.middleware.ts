@@ -50,6 +50,7 @@ export const requireCasinoEligibility = async (req: AuthRequest, res: Response, 
       $or: [{ effectiveUntil: { $exists: false } }, { effectiveUntil: null }, { effectiveUntil: { $gt: now } }],
     }).lean();
     if (!policy) return res.status(403).json({ code: 'JURISDICTION_NOT_AUTHORISED', message: 'Casino product is not authorised for this operator in the detected jurisdiction.' });
+    req.jurisdictionCode = countryCode;
     return next();
   } catch (error) {
     console.error('Real-money eligibility check failed closed:', error);
