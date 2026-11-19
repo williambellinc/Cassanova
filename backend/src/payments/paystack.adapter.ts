@@ -47,6 +47,22 @@ export class PaystackAdapter implements PaymentProviderAdapter {
     return {provider:this.providerId,providerEventId:'paystack:'+tx.id+':'+tx.status,providerPaymentId:String(tx.id),merchantReference:reference,amountMinor,currency:String(tx.currency).toUpperCase(),status:success?'settled':'failed',occurredAt:tx.paid_at?new Date(tx.paid_at):new Date(),rawPayloadHash:createHash('sha256').update(rawBody).digest('hex')};
   }
 
+  async parsePayoutWebhook(rawBody: Buffer) {
+    const hook = JSON.parse(rawBody.toString('utf8')) as any, data = hook?.data;
+    if (!['transfer.success','transfer.failed','transfer.reversed'].includes(String(hook?.event)) || !data?.reference) throw new Error('Unsupported Paystack payout event');
+    const reference = String(data.reference);
+    const response = await fetch(this.baseUrl + '/transfer/verify/' + encodeURIComponent(reference), { headers: { Authorization: 'Bearer ' + this.secretKey } });
+    const payload = await response.json() as any;
+    if (!response.ok || payload?.status !== true || !payload?.data) throw new Error('Paystack transfer verification failed');
+    const tx = payload.data;
+    if (String(tx.reference) !== reference || String(tx.currency).toUpperCase() !== String(data.currency).toUpperCase() || Number(tx.amount) !== Number(data.amount)) throw new Error('Verified Paystack transfer does not match webhook');
+    const status = tx.status === 'success' ? 'paid' : ['failed','reversed'].includes(String(tx.status)) ? 'failed' : null;
+    if (!status) throw new Error('Paystack transfer is not in a final state');
+    return { provider: this.providerId, providerEventId: 'paystack-transfer:' + tx.id + ':' + tx.status, merchantReference: reference,
+      providerPayoutId: String(tx.transfer_code || tx.id), amountMinor: Number(tx.amount), currency: String(tx.currency).toUpperCase(),
+      status, rawPayloadHash: createHash('sha256').update(rawBody).digest('hex') as string };
+  }
+
   async requestPayout(input:{merchantReference:string;amountMinor:number;currency:string;beneficiaryReference:string}):Promise<{providerPayoutId:string}>{
     if(!Number.isSafeInteger(input.amountMinor)||input.amountMinor<=0) throw new Error('Invalid payout amount');
     if(!/^RCP_[A-Za-z0-9]+$/.test(input.beneficiaryReference)) throw new Error('A Paystack transfer recipient code is required');
