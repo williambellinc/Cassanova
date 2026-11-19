@@ -8,7 +8,7 @@ export interface IWithdrawalRequest extends Document {
   jurisdictionCode: string;
   amountMinor: number;
   feeMinor: number;
-  status: 'reserved' | 'approved' | 'submitted' | 'review' | 'paid' | 'failed' | 'rejected';
+  status: 'reserved' | 'approved' | 'submitted' | 'review' | 'paid' | 'failed' | 'rejected' | 'cancelled';
   merchantReference: string;
   providerPayoutId?: string;
   reservedJournalId: string;
@@ -25,7 +25,7 @@ const schema = new Schema<IWithdrawalRequest>({
   jurisdictionCode: { type: String, required: true, uppercase: true, immutable: true },
   amountMinor: { type: Number, required: true, min: 1, immutable: true },
   feeMinor: { type: Number, required: true, min: 0, default: 0, immutable: true },
-  status: { type: String, enum: ['reserved','approved','submitted','review','paid','failed','rejected'], default: 'reserved', required: true },
+  status: { type: String, enum: ['reserved','approved','submitted','review','paid','failed','rejected','cancelled'], default: 'reserved', required: true },
   merchantReference: { type: String, required: true, unique: true, immutable: true },
   providerPayoutId: { type: String },
   reservedJournalId: { type: String, required: true, immutable: true },
