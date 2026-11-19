@@ -9,5 +9,5 @@ const router = Router();
 router.get('/reconciliation', authenticateToken, requireAdmin, getPaymentReconciliation);
 router.post('/intents', authenticateToken, requireCasinoEligibility, createDepositIntent);
 router.post('/withdrawals', authenticateToken, requireCasinoEligibility, requestWithdrawal);
-router.post('/withdrawals/:withdrawalId/approve-submit', authenticateToken, requireAdmin, requireCasinoEligibility, approveAndSubmitWithdrawal);
+router.post('/withdrawals/:withdrawalId/approve-submit', authenticateToken, requireAdmin, approveAndSubmitWithdrawal);
 export default router;
