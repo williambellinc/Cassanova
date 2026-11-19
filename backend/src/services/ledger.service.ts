@@ -25,7 +25,7 @@ export function validateBalancedLines(lines: Array<{ direction: 'debit' | 'credi
 
 /** Debit-normal asset accounts increase on debit; credit-normal liability/equity/revenue accounts increase on credit. */
 export function normalBalanceForAccount(type: LedgerAccountType): 'debit' | 'credit' {
-  return type === 'payment_clearing' || type === 'migration_clearing' ? 'debit' : 'credit';
+  return type === 'payment_clearing' || type === 'migration_clearing' || type === 'payout_clearing' ? 'debit' : 'credit';
 }
 
 export async function getOrCreateLedgerAccount(input: {
