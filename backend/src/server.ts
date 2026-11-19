@@ -10,6 +10,7 @@ import userRoutes from './routes/user.routes';
 import promotionRoutes from './routes/promotion.routes';
 import transactionRoutes from './routes/transaction.routes';
 import originalsRoutes from './routes/originals.routes';
+import paymentWebhookRoutes from './routes/payment-webhook.routes';
 import { securityHeaders } from './middleware/security.middleware';
 
 dotenv.config();
@@ -30,6 +31,8 @@ app.use(cors({
   },
   credentials: true,
 }));
+// Raw body must reach the payment verifier unchanged; mount before JSON parsing.
+app.use('/api/payments/webhooks', paymentWebhookRoutes);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
