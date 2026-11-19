@@ -28,7 +28,7 @@ export const requireCasinoEligibility = async (req: AuthRequest, res: Response, 
     if (user.responsibleGaming?.selfExclusionUntil && new Date(user.responsibleGaming.selfExclusionUntil) > new Date()) {
       return res.status(403).json({ code: 'SELF_EXCLUDED', message: 'Real-money access is blocked during self-exclusion.' });
     }
-    const ip = req.socket.remoteAddress;
+    const ip = req.ip;
     if (!ip) return res.status(503).json({ code: 'GEOLOCATION_UNAVAILABLE', message: 'Client network location could not be established.' });
     const geoResponse = await fetch(geoUrl, {
       method: 'POST', headers: { Authorization: 'Bearer ' + geoToken, 'Content-Type': 'application/json' },
