@@ -53,3 +53,28 @@ This repository is an inherited demonstration casino application. Its existing s
 - The existing game detail page still requires a real launch/session flow.
 - Existing JWT, browser token storage, CORS, admin authorisation, secrets management and KYC workflows require a full security review.
 - No successful build or test run is claimed by this document.
+
+
+## Progress update — engineering phase 2
+
+### Implemented in the feature branch
+
+- Added multi-currency ledger account and immutable journal-entry models.
+- Added a transaction-based double-entry transfer service using integer minor units, exact debit/credit balancing, account-state checks, insufficient-funds checks and idempotency-key conflict detection.
+- Added unit tests for journal balance invariants using Node's built-in test runner.
+- Added provider-neutral payment and game-provider adapter contracts. Provider registries are intentionally empty; no live integration is represented.
+- Added a deduplicated payment-event inbox model. This is storage infrastructure, not a live webhook or settlement integration.
+- Added a jurisdiction-policy model defaulting to disabled.
+- Added player/support/compliance/admin roles and enforced admin-only access for game and promotion creation.
+- Removed the hardcoded JWT fallback. Login and authenticated requests fail closed when `JWT_SECRET` is not configured.
+- Restricted browser CORS origins to the configured allowlist.
+- Added a VELT Originals Dice practice endpoint and frontend page. Outcomes are generated server-side with Node's cryptographic random integer generator and stored as practice rounds. There are no wagers, wallet debits or prizes.
+
+### Important constraints
+
+- The ledger service requires MongoDB transaction support (replica set or compatible managed cluster). It is not yet wired as the authoritative replacement for the legacy `User.balance` field.
+- There is no PSP webhook endpoint, provider signature verification, settlement posting or payout integration yet.
+- There is no third-party game provider configured.
+- The Dice practice mechanic is not independently certified and must not be offered for real-money play.
+- Jurisdiction policy and real-money denial controls are foundations only; trusted geolocation, licence evidence and complete KYC/AML enforcement remain to be integrated.
+- Existing accounts default to the `player` role. Administrator provisioning must be handled through a controlled operational process, not public registration.
