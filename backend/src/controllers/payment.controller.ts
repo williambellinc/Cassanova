@@ -20,8 +20,8 @@ export const createDepositIntent = async (req: AuthRequest, res: Response) => {
     return res.status(503).json({ message: 'A secure payment return URL is not configured' });
   }
 
-  const customer = await User.findById(req.userId).select('email').lean();
-  if (!customer?.email) return res.status(400).json({ message: 'A verified customer email is required for checkout' });
+  const customer = await User.findById(req.userId).select('email isVerified').lean();
+  if (!customer?.email || !customer.isVerified) return res.status(400).json({ message: 'A verified customer email is required for checkout' });
 
   const merchantReference = `velt_dep_${randomUUID()}`;
   const intent = await PaymentIntent.create({
