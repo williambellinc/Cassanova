@@ -162,7 +162,7 @@ export default function VeltOriginalsPage() {
             </div>}
 
             {game === 'crash' && <div className="text-center">
-              <h2 className="text-2xl font-black">Crash</h2><p className="mt-1 text-sm text-slate-400">Choose a target multiplier. The server generates the crash point for each round.</p>
+              <h2 className="text-2xl font-black">Crash</h2><p className="mt-1 text-sm text-slate-400">Choose a target multiplier. The server generates the crash point for each round.</p><a href="/originals/crash" className="mt-3 inline-block text-sm font-bold text-cyan-300 underline underline-offset-4">Open animated flight view ↗</a>
               <div className="mx-auto mt-8 max-w-xs rounded-3xl border border-white/10 bg-slate-950 p-7">
                 <p className="text-xs uppercase tracking-widest text-slate-500">Your practice target</p>
                 <div className="mt-2 flex items-center justify-center gap-2"><input type="number" min="1.01" max="1000" step="0.01" value={crashTarget} onChange={e => setCrashTarget(Number(e.target.value))} className="w-32 rounded-xl border border-white/10 bg-slate-900 px-3 py-3 text-center text-2xl font-black text-white" /><span className="text-xl text-cyan-300">x</span></div>
