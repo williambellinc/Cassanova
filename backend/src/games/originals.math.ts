@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 
-export const PLINKO_MULTIPLIERS = [5.8, 2.5, 1.25, 0.9, 0.5, 0.9, 1.25, 2.5, 5.8] as const;
+export const PLINKO_MULTIPLIERS = [3.82, 2.5, 1.25, 0.9, 0.5, 0.9, 1.25, 2.5, 3.82] as const;
 
 export function minesMultiplier(mineCount: number, safePicks: number) {
   if (!Number.isInteger(mineCount) || mineCount < 1 || mineCount > 24 ||
