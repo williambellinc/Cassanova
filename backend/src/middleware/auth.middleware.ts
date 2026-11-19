@@ -49,3 +49,15 @@ export const denyRealMoneyUntilAuthorised = (_req: Request, res: Response) => {
     code: 'REAL_MONEY_NOT_ENABLED',
   });
 };
+
+
+export const requireComplianceOfficer = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.userId) return res.status(401).json({ message: 'Authentication required' });
+    const user = await User.findById(req.userId).select('role');
+    if (!user || !['admin', 'compliance'].includes(user.role)) return res.status(403).json({ message: 'Compliance officer access required' });
+    return next();
+  } catch {
+    return res.status(500).json({ message: 'Unable to verify compliance permissions' });
+  }
+};
