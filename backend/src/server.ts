@@ -8,16 +8,25 @@ import authRoutes from './routes/auth.routes';
 import gameRoutes from './routes/game.routes';
 import userRoutes from './routes/user.routes';
 import promotionRoutes from './routes/promotion.routes';
-import transactionRoutes from './routes/transaction.routes';\nimport originalsRoutes from './routes/originals.routes';
+import transactionRoutes from './routes/transaction.routes';
+import originalsRoutes from './routes/originals.routes';
 
 dotenv.config();
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/cassanova';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/velt';
 
 // Middleware
-const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000')\n  .split(',').map((origin) => origin.trim()).filter(Boolean);\napp.use(cors({\n  origin: (origin, callback) => {\n    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);\n    return callback(new Error('Origin not allowed by CORS'));\n  },\n  credentials: true,\n}));
+const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000')
+  .split(',').map((origin) => origin.trim()).filter(Boolean);
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Origin not allowed by CORS'));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -26,7 +35,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/promotions', promotionRoutes);
-app.use('/api/transactions', transactionRoutes);\napp.use('/api/originals', originalsRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/originals', originalsRoutes);
 
 // Health check
 app.get('/api/health', (req: Request, res: Response) => {
