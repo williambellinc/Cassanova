@@ -69,13 +69,13 @@ export const updateResponsibleGaming = async (req: AuthRequest, res: Response) =
         'responsibleGaming.sessionTimeLimit': sessionTimeLimit,
       },
       { new: true }
-    ).select('-password -verificationToken');
+    );
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json({ message: 'Responsible gaming settings updated', user });
+    res.json({ message: 'Responsible gaming settings updated', user: await serializeUser(user) });
   } catch (error) {
     console.error('Update responsible gaming error:', error);
     res.status(500).json({ message: 'Failed to update settings', error });
