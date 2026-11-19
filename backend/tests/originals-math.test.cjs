@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { minesMultiplier, plinkoExpectedReturn, crashPoint } = require('../dist/games/originals.math');
+const { minesMultiplier, plinkoExpectedReturn, crashPoint, calculateDiceOutcome } = require('../dist/games/originals.math');
 
 test('Mines multiplier is inverse safe-pick probability with 1% house edge', () => {
   const mines = 3, picks = 4;
@@ -18,5 +18,13 @@ test('Crash generator returns a bounded multiplier of at least 1.00x', () => {
     const point = crashPoint();
     assert.ok(point >= 1 && point <= 1000);
     assert.equal(Math.round(point * 100), point * 100);
+  }
+});
+
+test('Dice over/under pricing applies a 1% theoretical house edge', () => {
+  for (const direction of ['over', 'under']) {
+    const outcome = calculateDiceOutcome(5000, 5000, direction);
+    assert.ok(Math.abs(outcome.winProbability * outcome.multiplier - 0.99) < 0.0001);
+    assert.equal(outcome.result, direction === 'over' ? 'win' : 'loss');
   }
 });
