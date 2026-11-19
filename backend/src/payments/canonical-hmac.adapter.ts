@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'crypto';
+import { createHash, createHmac, timingSafeEqual } from 'crypto';
 import { PaymentProviderAdapter, VerifiedPaymentEvent } from './payment-provider.contract';
 
 type CanonicalEvent = {
@@ -53,7 +53,7 @@ export class CanonicalHmacPaymentAdapter implements PaymentProviderAdapter {
       provider: this.providerId, providerEventId: event.id, providerPaymentId: paymentId,
       merchantReference: reference, amountMinor, currency: currency.toUpperCase(),
       status, occurredAt: event.data.occurredAt ? new Date(event.data.occurredAt) : new Date(),
-      rawPayloadHash: createHmac('sha256', 'velt-payload-hash-v1').update(rawBody).digest('hex'),
+      rawPayloadHash: createHash('sha256').update(rawBody).digest('hex'),
     };
   }
 
