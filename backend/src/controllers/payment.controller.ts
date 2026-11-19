@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import { AuthRequest } from '../middleware/auth.middleware';
 import PaymentIntent from '../models/PaymentIntent';
+import User from '../models/User';
 import { paymentProviders } from '../payments/payment-provider.contract';
 
 export const createDepositIntent = async (req: AuthRequest, res: Response) => {
@@ -19,12 +20,15 @@ export const createDepositIntent = async (req: AuthRequest, res: Response) => {
     return res.status(503).json({ message: 'A secure payment return URL is not configured' });
   }
 
+  const customer = await User.findById(req.userId).select('email').lean();
+  if (!customer?.email) return res.status(400).json({ message: 'A verified customer email is required for checkout' });
+
   const merchantReference = `velt_dep_${randomUUID()}`;
   const intent = await PaymentIntent.create({
     userId: req.userId, provider: providerId, merchantReference, amountMinor, currency, status: 'pending',
   });
   try {
-    const providerIntent = await adapter.createDepositIntent({ merchantReference, amountMinor, currency, returnUrl });
+    const providerIntent = await adapter.createDepositIntent({ merchantReference, amountMinor, currency, returnUrl, customerEmail: customer.email });
     intent.providerPaymentId = providerIntent.providerPaymentId;
     await intent.save();
     return res.status(201).json({
