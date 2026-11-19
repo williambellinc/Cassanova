@@ -96,6 +96,21 @@ export class FlutterwaveV3Adapter implements PaymentProviderAdapter {
     };
   }
 
+  async parsePayoutWebhook(rawBody: Buffer) {
+    const hook = JSON.parse(rawBody.toString('utf8')) as any, data = hook?.data;
+    if (!data?.id || !data?.reference || !data?.currency || !Number.isFinite(Number(data?.amount))) throw new Error('Flutterwave payout event is missing transfer details');
+    const response = await fetch(this.baseUrl + '/transfers/' + encodeURIComponent(String(data.id)), { headers: { Authorization: 'Bearer ' + this.secretKey } });
+    const payload = await response.json() as any;
+    if (!response.ok || payload?.status !== 'success' || !payload?.data) throw new Error('Flutterwave transfer verification failed');
+    const tx = payload.data;
+    if (String(tx.reference) !== String(data.reference) || String(tx.currency).toUpperCase() !== String(data.currency).toUpperCase() || Math.round(Number(tx.amount) * 100) !== Math.round(Number(data.amount) * 100)) throw new Error('Verified Flutterwave transfer does not match webhook');
+    const status = tx.status === 'SUCCESSFUL' || tx.status === 'successful' ? 'paid' : ['FAILED','failed'].includes(String(tx.status)) ? 'failed' : null;
+    if (!status) throw new Error('Flutterwave transfer is not in a final state');
+    return { provider: this.providerId, providerEventId: 'flutterwave-transfer:' + tx.id + ':' + tx.status, merchantReference: String(tx.reference),
+      providerPayoutId: String(tx.id), amountMinor: Math.round(Number(tx.amount) * 100), currency: String(tx.currency).toUpperCase(),
+      status, rawPayloadHash: createHash('sha256').update(rawBody).digest('hex') };
+  }
+
   async requestPayout(input: {
     merchantReference: string;
     amountMinor: number;
