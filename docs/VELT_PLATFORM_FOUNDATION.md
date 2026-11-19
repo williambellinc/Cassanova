@@ -146,3 +146,39 @@ This repository is an inherited demonstration casino application. Its existing s
 - Amount conversion is explicitly limited to configured two-decimal currencies: ZAR, NGN, GHS, KES, TZS, USD, GBP and EUR. Other currencies fail closed pending an explicit minor-unit map.
 - The payout adapter is an API integration primitive, not a complete withdrawal product. Beneficiary ownership, KYC/AML, payout approval, wallet reservation/debit, transfer callback reconciliation, provider account enablement and jurisdiction authorization remain release gates.
 - The adapter requires real Flutterwave test/live credentials and merchant onboarding. No credentials have been supplied and no external payment or payout has been initiated.
+
+
+## Expanded payment, compliance and fairness workstream (November 2026)
+
+### PSPs
+- Added Paystack adapter for server-side transaction initialization, transaction verification, raw-body HMAC-SHA512 webhook validation, timestamped `Paystack-Signature` validation using a dedicated webhook secret, transfer-recipient creation and transfer submission.
+- Paystack transfer callbacks are verified against the Transfer Verify API before payout settlement. Supported recipient types are deliberately limited to NGN/NUBAN, GHS/GHIPSS and ZAR/BASA in this adapter.
+- Flutterwave beneficiary creation now uses the v3 Beneficiaries API and returns the provider-resolved beneficiary name. Transfer execution fetches the stored beneficiary and uses its returned bank code and account details.
+- Provider webhooks are routed independently at `/api/payments/webhooks/flutterwave` and `/api/payments/webhooks/paystack`; default deposit provider selection remains `PAYMENT_PROVIDER_ID`.
+- Paystack and Flutterwave have test modes. No sandbox keys have been supplied and no provider API call has been executed from this environment.
+
+### Withdrawal lifecycle
+- Added verified beneficiary storage with provider reference hidden from normal model projections.
+- Beneficiary creation requires KYC approval and AML clearance, provider account-name resolution, and a strict match to the player's verified legal name.
+- Withdrawal requests reserve funds by double-entry posting from player wallet liability to withdrawal liability.
+- Independent admin approval enforces maker-checker separation; the requester cannot approve their own payout.
+- Provider submission creates a payout instruction. Final success/failure callbacks are verified server-to-server and reconciled idempotently. Failed payouts release reserved funds back to the player's wallet; successful payouts reduce withdrawal liability and payment clearing.
+- Ambiguous provider submission outcomes are held in `review` and must be reconciled before any retry. No blind payout retry is permitted.
+- Payout callback settlement and bank reconciliation still require live/sandbox end-to-end tests and finance sign-off.
+
+### KYC, AML and jurisdiction
+- Added Sumsub signed API client, applicant creation, short-lived WebSDK access tokens, HMAC-signed raw-body webhook verification and timestamp-ordered applicant review updates.
+- Sumsub KYC GREEN does not automatically clear AML. AML rechecks and explicit compliance-officer dispositions are separately recorded in an immutable compliance decision log.
+- Real-money payment/withdrawal routes use a fail-closed eligibility gate requiring KYC verified, AML clear, 18+, no active self-exclusion, trusted geolocation, and an enabled jurisdiction policy for the named operator and casino product.
+- Geolocation is delegated to a configured trusted service with an explicit response contract; no client-supplied country headers are trusted. This endpoint, token, and operator policy must be provisioned and tested before any market is enabled.
+- Sumsub and geolocation provider credentials are not present. KYC/AML and jurisdiction flows are implemented as integration paths but not operationally activated.
+
+### Wallet migration and reconciliation
+- Added a read-only per-user reconciliation command: `npm run reconcile:wallets`.
+- It compares legacy cash/bonus balances, migration snapshots and per-user ledger wallet/bonus balances; exits non-zero on mismatch.
+- `WALLET_LEDGER_READS_ENABLED` remains false. Migration must be run with explicit currency, backup, dry-run review, applied opening journals, reconciliation and Finance sign-off before enabling ledger reads or any wagering.
+
+### Game fairness and certification
+- Added HMAC-SHA256 counter-mode commit/reveal entropy for practice Dice, Mines, Plinko and Crash rounds, persisting algorithm version, client seed, nonce, server-seed commitment and practice seed reveal.
+- Added unit tests for commitment verification, bounded integer generation and Paystack webhook signatures.
+- Internal math tests are not independent certification. RNG/game mathematics certification by an accredited test laboratory, game-specific RTP/house-edge approval, operational controls and jurisdiction approval remain mandatory before real-money release.
