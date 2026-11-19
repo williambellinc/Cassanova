@@ -6,7 +6,8 @@
     "dev": "nodemon src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "npm run build && node --test tests/*.test.cjs"
+    "test": "npm run build && node --test tests/*.test.cjs",
+    "migrate:wallets": "npm run build && node dist/scripts/migrate-legacy-wallets.js"
   },
   "keywords": [
     "casino",
