@@ -34,9 +34,9 @@ export function calculateDiceOutcome(rollHundredths: number, targetHundredths: n
       !['over', 'under'].includes(direction)) {
     throw new Error('Invalid Dice outcome inputs');
   }
-  const winningOutcomes = direction === 'over' ? 10000 - targetHundredths : targetHundredths + 1;
+  const winningOutcomes = direction === 'over' ? 10000 - targetHundredths : targetHundredths;
   const winProbability = winningOutcomes / 10000;
-  const won = direction === 'over' ? rollHundredths >= targetHundredths : rollHundredths <= targetHundredths;
+  const won = direction === 'over' ? rollHundredths >= targetHundredths : rollHundredths < targetHundredths;
   return {
     roll: rollHundredths / 100,
     target: targetHundredths / 100,
