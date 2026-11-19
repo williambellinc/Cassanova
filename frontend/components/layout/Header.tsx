@@ -13,7 +13,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-              🎰 Cassanova
+              🎰 VELT
             </div>
           </Link>
 
@@ -22,7 +22,7 @@ export default function Header() {
             <Link href="/games" className="hover:text-yellow-400 transition-colors font-medium">
               Casino
             </Link>
-            <Link href="/arcade" className="hover:text-yellow-400 transition-colors font-medium">
+            <Link href="/casino-practice" className="hover:text-yellow-400 transition-colors font-medium">\n              Casino Practice\n            </Link>\n            <Link href="/arcade" className="hover:text-yellow-400 transition-colors font-medium">
               Arcade
             </Link>
             <Link href="/originals" className="hover:text-yellow-400 transition-colors font-medium">
@@ -77,7 +77,7 @@ export default function Header() {
               <Link href="/games" className="hover:text-yellow-400 transition-colors">
                 Casino
               </Link>
-              <Link href="/arcade" className="hover:text-yellow-400 transition-colors">
+              <Link href="/casino-practice" className="hover:text-yellow-400 transition-colors">\n                Casino Practice\n              </Link>\n              <Link href="/arcade" className="hover:text-yellow-400 transition-colors">
                 Arcade
               </Link>
               <Link href="/originals" className="hover:text-yellow-400 transition-colors">
