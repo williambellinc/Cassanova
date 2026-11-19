@@ -182,3 +182,12 @@ This repository is an inherited demonstration casino application. Its existing s
 - Added HMAC-SHA256 counter-mode commit/reveal entropy for practice Dice, Mines, Plinko and Crash rounds, persisting algorithm version, client seed, nonce, server-seed commitment and practice seed reveal.
 - Added unit tests for commitment verification, bounded integer generation and Paystack webhook signatures.
 - Internal math tests are not independent certification. RNG/game mathematics certification by an accredited test laboratory, game-specific RTP/house-edge approval, operational controls and jurisdiction approval remain mandatory before real-money release.
+
+
+### VELT Casino practice catalogue
+- Added server-authoritative practice Roulette (single-zero 37-pocket wheel), 3-reel weighted Slots, Punto Banco Baccarat and 6-deck Blackjack.
+- Blackjack uses a server-held shoe, server-side hit/stand actions, dealer stands on soft 17, and hidden dealer hole card until settlement.
+- Baccarat uses the correct 4/13 ten-value card frequency and standard third-card drawing rules; tie pushes banker/player bets and pays 8:1 on the tie selection.
+- Roulette and Slots theoretical returns are calculated in code and covered by unit tests. The 3-reel slot paytable is approximately 97.0074% RTP; single-zero roulette is 36/37 RTP.
+- Added `/casino-practice` UI and navigation link. All new games are practice-only, have no wallet hooks and cannot create cash-value credits.
+- Live casino games, third-party provider game-launch contracts and independently certified production RNG/RTP remain separate release work.
