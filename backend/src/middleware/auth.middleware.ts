@@ -4,6 +4,7 @@ import User from '../models/User';
 
 export interface AuthRequest extends Request {
   userId?: string;
+  jurisdictionCode?: string;
 }
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
