@@ -32,12 +32,16 @@ export async function processVerifiedPaymentEvent(event: VerifiedPaymentEvent) {
 
   const intent = await PaymentIntent.findOne({ merchantReference: event.merchantReference, provider: event.provider });
   if (!intent) throw new Error('Payment intent not found; event held for reconciliation');
-  if (intent.amountMinor !== event.amountMinor || intent.currency !== event.currency) {
+  if (intent.currency !== event.currency ||
+      (event.status === 'settled' && intent.amountMinor !== event.amountMinor) ||
+      (event.status === 'failed' && intent.amountMinor !== event.amountMinor) ||
+      ((event.status === 'refunded' || event.status === 'reversed') &&
+        (event.amountMinor > intent.amountMinor - (intent.refundedMinor || 0) || event.amountMinor <= 0))) {
     intent.status = 'review';
     await intent.save();
     stored.processingStatus = 'failed';
     await stored.save();
-    throw new Error('Settlement amount or currency does not match payment intent');
+    throw new Error('Payment event amount or currency does not match the remaining intent balance');
   }
   if (event.providerPaymentId && intent.providerPaymentId && intent.providerPaymentId !== event.providerPaymentId) {
     stored.processingStatus = 'failed';
@@ -86,7 +90,8 @@ export async function processVerifiedPaymentEvent(event: VerifiedPaymentEvent) {
       reference: event.merchantReference, description: event.status === 'refunded' ? 'Verified payment refund' : 'Verified payment reversal',
       metadata: { provider: event.provider, providerEventId: event.providerEventId, providerPaymentId: event.providerPaymentId },
     });
-    intent.status = 'refunded';
+    intent.refundedMinor = (intent.refundedMinor || 0) + event.amountMinor;
+    intent.status = intent.refundedMinor >= intent.amountMinor ? 'refunded' : 'settled';
     await intent.save();
   } else if (event.status === 'failed') {
     if (intent.status === 'pending') intent.status = 'failed';
