@@ -18,6 +18,11 @@ export interface VerifiedPaymentEvent {
   rawPayloadHash: string;
 }
 
+export interface VerifiedPayoutEvent {
+  provider: string; providerEventId: string; merchantReference: string; providerPayoutId: string;
+  amountMinor: number; currency: string; status: 'paid' | 'failed'; rawPayloadHash: string;
+}
+
 export interface PaymentProviderAdapter {
   readonly providerId: string;
   verifyWebhook(rawBody: Buffer, signature: string, timestamp?: string): Promise<boolean>;
@@ -29,6 +34,7 @@ export interface PaymentProviderAdapter {
     returnUrl: string;
     customerEmail: string;
   }): Promise<{ providerPaymentId?: string; redirectUrl?: string }>;
+  parsePayoutWebhook?(rawBody: Buffer): Promise<VerifiedPayoutEvent>;
   requestPayout(input: {
     merchantReference: string;
     amountMinor: number;
