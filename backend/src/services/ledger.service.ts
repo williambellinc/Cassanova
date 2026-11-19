@@ -139,3 +139,19 @@ export async function postLedgerTransfer(input: {
     description: input.description, metadata: input.metadata,
   });
 }
+
+
+export async function getUserLedgerWalletBalances(userId: string, currency: string) {
+  const normalizedCurrency = currency.toUpperCase();
+  const [wallet, bonus] = await Promise.all([
+    LedgerAccount.findOne({ ownerType: 'user', ownerId: userId, accountType: 'player_wallet', currency: normalizedCurrency }),
+    LedgerAccount.findOne({ ownerType: 'user', ownerId: userId, accountType: 'bonus_liability', currency: normalizedCurrency }),
+  ]);
+  return {
+    currency: normalizedCurrency,
+    balanceMinor: wallet?.balanceMinor ?? 0,
+    bonusBalanceMinor: bonus?.balanceMinor ?? 0,
+    walletAccountFound: Boolean(wallet),
+    bonusAccountFound: Boolean(bonus),
+  };
+}
