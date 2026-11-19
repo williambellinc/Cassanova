@@ -72,7 +72,16 @@ export async function postLedgerTransfer(input: {
   }
 
   const currency = input.currency.toUpperCase();
-  const expectedLines = [\n    { direction: 'debit' as const, amountMinor: input.amountMinor },\n    { direction: 'credit' as const, amountMinor: input.amountMinor },\n  ];\n  validateBalancedLines(expectedLines);\n  const matchesRequest = (entry: any) => entry.currency === currency && entry.reference === input.reference &&\n    entry.lines.length === 2 &&\n    entry.lines.some((line: any) => line.accountId.toString() === input.debitAccountId && line.direction === 'debit' && line.amountMinor === input.amountMinor) &&\n    entry.lines.some((line: any) => line.accountId.toString() === input.creditAccountId && line.direction === 'credit' && line.amountMinor === input.amountMinor);\n  const existing = await LedgerJournal.findOne({ idempotencyKey: input.idempotencyKey });
+  const expectedLines = [
+    { direction: 'debit' as const, amountMinor: input.amountMinor },
+    { direction: 'credit' as const, amountMinor: input.amountMinor },
+  ];
+  validateBalancedLines(expectedLines);
+  const matchesRequest = (entry: any) => entry.currency === currency && entry.reference === input.reference &&
+    entry.lines.length === 2 &&
+    entry.lines.some((line: any) => line.accountId.toString() === input.debitAccountId && line.direction === 'debit' && line.amountMinor === input.amountMinor) &&
+    entry.lines.some((line: any) => line.accountId.toString() === input.creditAccountId && line.direction === 'credit' && line.amountMinor === input.amountMinor);
+  const existing = await LedgerJournal.findOne({ idempotencyKey: input.idempotencyKey });
   if (existing) {
     if (!matchesRequest(existing)) throw new LedgerError('Idempotency key was already used for a different transfer', 'IDEMPOTENCY_CONFLICT');
     return existing;
