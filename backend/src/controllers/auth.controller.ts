@@ -7,7 +7,7 @@ import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
 import { AuthRequest } from '../middleware/auth.middleware';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -52,6 +52,7 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
+    if (!JWT_SECRET) return res.status(503).json({ message: 'Authentication is not configured' });
     const { email, password, twoFactorCode } = req.body;
 
     // Find user
