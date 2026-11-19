@@ -128,7 +128,7 @@ export const playPlinkoDemo = async (req: Request, res: Response) => {
     const round = await GameRound.create({
       roundReference: randomUUID(), gameCode: 'velt-plinko', mode: 'demo',
       outcome: { rows, path, slot, multiplier },
-      algorithmVersion: 'velt-plinko-8row-99.06-v1',
+      algorithmVersion: 'velt-plinko-8row-99pct-v1',
     });
     return res.status(201).json({
       roundReference: round.roundReference, gameCode: round.gameCode, mode: 'demo',
