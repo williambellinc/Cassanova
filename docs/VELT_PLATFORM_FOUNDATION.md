@@ -105,14 +105,14 @@ This repository is an inherited demonstration casino application. Its existing s
 - Added `npm run migrate:wallets`. It requires an explicit `LEGACY_BALANCE_CURRENCY`; without `--apply` it performs a dry run. With `--apply`, it posts opening entries into the ledger and records a per-user snapshot.
 - Added a controlled `WALLET_LEDGER_READS_ENABLED` cutover. Do not enable it until the migration report has been reviewed and balances reconciled.
 - Migration creates a migration-clearing asset account. This is a reconciliation suspense balance, not proof of safeguarded cash. Reconcile it against bank/payment statements before enabling withdrawals or wagering.
-- The migration has not been executed against a production database in this environment.
+- The migration has not been executed against a production database in this environment. The dry-run mode is read-only; apply mode must be run during a wallet-write freeze with a verified backup.
 
 ### Payment settlement
 
 - Added a raw-body webhook endpoint, HMAC-SHA256 signature verification, timestamp tolerance, payload fingerprinting, provider-event deduplication and idempotent ledger posting.
 - Added payment-intent and settlement event records, with settlement, failure, refund and reversal handling.
-- The HMAC adapter defines a VELT canonical gateway contract. It is not an adapter for a named PSP. No provider API credentials or provider-specific webhook specification have been supplied, so actual deposit-intent creation and payouts remain unconnected.
-- Refunds that cannot be debited from the player's available wallet are held for reconciliation rather than silently creating a negative balance.
+- The HMAC adapter defines a VELT canonical gateway contract. It is not an adapter for a named PSP. A provider-backed deposit-intent route and admin reconciliation exception report are present, but the deposit-intent route remains behind the fail-closed real-money authorisation middleware. No provider API credentials or provider-specific webhook specification have been supplied, so actual deposit-intent creation and payouts remain unconnected.
+- Full and partial refunds are supported against the remaining settled intent amount. Refunds that cannot be debited from the player's available wallet are held for reconciliation rather than silently creating a negative balance.
 
 ### VELT Originals
 
@@ -131,3 +131,7 @@ This repository is an inherited demonstration casino application. Its existing s
 
 - Dice now uses an over/under target mechanic on a 0.00–99.99 scale with server-generated rolls and a 1% theoretical house edge.
 - The consolidated practice interface is available at `/originals`; the standalone Dice page remains at `/originals/dice`.
+
+
+- The provider event inbox records verified callbacks and retries incomplete processing idempotently. Provider settlement statements and bank files still need an operational reconciliation process.
+- Withdrawals and wagering are deliberately not activated. The payout adapter contract exists, but no payout provider, payout status callback, or licensed wagering flow is connected.
