@@ -48,7 +48,7 @@ export class FlutterwaveV3Adapter implements PaymentProviderAdapter {
     if (!response.ok || payload?.status !== 'success' || !payload?.data?.link) {
       throw new Error(payload?.message || 'Flutterwave could not initialize checkout');
     }
-    return { providerPaymentId: input.merchantReference, redirectUrl: payload.data.link };
+    return { redirectUrl: payload.data.link };
   }
 
   async parseWebhook(rawBody: Buffer): Promise<VerifiedPaymentEvent> {
@@ -93,7 +93,43 @@ export class FlutterwaveV3Adapter implements PaymentProviderAdapter {
     };
   }
 
-  async requestPayout(): Promise<never> {
-    throw new Error('Flutterwave payout execution is intentionally unavailable until a verified beneficiary, country-specific transfer rail, compliance approval and payout reconciliation workflow are configured.');
+  async requestPayout(input: {
+    merchantReference: string;
+    amountMinor: number;
+    currency: string;
+    beneficiaryReference: string;
+  }): Promise<{ providerPayoutId: string }> {
+    if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor <= 0) throw new Error('Invalid payout amount');
+    if (!/^\\d+$/.test(input.beneficiaryReference)) throw new Error('A Flutterwave beneficiary ID is required');
+    const beneficiaryResponse = await fetch(`${this.baseUrl}/beneficiaries/${encodeURIComponent(input.beneficiaryReference)}`, {
+      headers: { Authorization: `Bearer ${this.secretKey}` },
+    });
+    const beneficiaryPayload = await beneficiaryResponse.json() as any;
+    const beneficiary = beneficiaryPayload?.data;
+    if (!beneficiaryResponse.ok || beneficiaryPayload?.status !== 'success' || !beneficiary?.account_bank || !beneficiary?.account_number) {
+      throw new Error('Flutterwave beneficiary lookup failed');
+    }
+    if (String(beneficiary.currency || '').toUpperCase() !== input.currency.toUpperCase()) {
+      throw new Error('Payout currency does not match verified beneficiary currency');
+    }
+    const transferResponse = await fetch(`${this.baseUrl}/transfers`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${this.secretKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        account_bank: beneficiary.account_bank,
+        account_number: beneficiary.account_number,
+        beneficiary: Number(input.beneficiaryReference),
+        beneficiary_name: beneficiary.beneficiary_name,
+        amount: input.amountMinor / 100,
+        currency: input.currency,
+        reference: input.merchantReference,
+        narration: 'VELT approved withdrawal',
+      }),
+    });
+    const transferPayload = await transferResponse.json() as any;
+    if (!transferResponse.ok || transferPayload?.status !== 'success' || !transferPayload?.data?.id) {
+      throw new Error(transferPayload?.message || 'Flutterwave transfer request failed');
+    }
+    return { providerPayoutId: String(transferPayload.data.id) };
   }
 }
