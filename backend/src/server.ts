@@ -32,6 +32,11 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/velt';
 
 // Middleware
 app.disable('x-powered-by');
+if (process.env.TRUSTED_PROXY_HOPS) {
+  const hops = Number(process.env.TRUSTED_PROXY_HOPS);
+  if (!Number.isInteger(hops) || hops < 1 || hops > 5) throw new Error('TRUSTED_PROXY_HOPS must be an integer from 1 to 5');
+  app.set('trust proxy', hops);
+}
 app.use(securityHeaders);
 const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000')
   .split(',').map((origin) => origin.trim()).filter(Boolean);
