@@ -41,7 +41,7 @@ export default function VeltDiceDemoPage() {
 
         <section className="mt-10 rounded-3xl border border-slate-700 bg-slate-900 p-8 text-center">
           <div className="mx-auto flex h-36 w-36 items-center justify-center rounded-3xl bg-white text-7xl font-black text-slate-950 shadow-2xl" aria-live="polite">
-            {loading ? '…' : round?.outcome.diceValue ?? '—'}
+            {loading ? '…' : round?.outcome.roll.toFixed(2) ?? '—'}
           </div>
           {round && (
             <div className="mt-6">
