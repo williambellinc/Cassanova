@@ -9,8 +9,8 @@ test('Mines multiplier is inverse safe-pick probability with 1% house edge', () 
   assert.ok(Math.abs(minesMultiplier(mines, picks) * probability - 0.99) < 0.0001);
 });
 
-test('Plinko eight-row binomial table has approximately 99.0625% theoretical return', () => {
-  assert.ok(Math.abs(plinkoExpectedReturn() - 0.990625) < 1e-10);
+test('Plinko eight-row binomial table has approximately 99% theoretical return', () => {
+  assert.ok(Math.abs(plinkoExpectedReturn() - 0.99) < 1e-10);
 });
 
 test('Crash generator returns a bounded multiplier of at least 1.00x', () => {
