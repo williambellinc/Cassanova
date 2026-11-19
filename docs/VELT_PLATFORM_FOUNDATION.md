@@ -94,3 +94,36 @@ This repository is an inherited demonstration casino application. Its existing s
 
 - Added automated tests for the interim rate limiter's allow/block behavior and the baseline response security headers.
 - The rate limiter is process-local and resets on process restart. Do not rely on it as the sole production abuse-control mechanism.
+
+
+## Delivery update — wallet, settlement and Originals
+
+### Wallet migration and ledger
+
+- Ledger posting now applies accounting normal-balance rules: asset accounts increase on debit; player-wallet and bonus liabilities increase on credit.
+- Added an immutable per-player migration snapshot and an idempotent migration service for legacy cash and bonus balances.
+- Added `npm run migrate:wallets`. It requires an explicit `LEGACY_BALANCE_CURRENCY`; without `--apply` it performs a dry run. With `--apply`, it posts opening entries into the ledger and records a per-user snapshot.
+- Added a controlled `WALLET_LEDGER_READS_ENABLED` cutover. Do not enable it until the migration report has been reviewed and balances reconciled.
+- Migration creates a migration-clearing asset account. This is a reconciliation suspense balance, not proof of safeguarded cash. Reconcile it against bank/payment statements before enabling withdrawals or wagering.
+- The migration has not been executed against a production database in this environment.
+
+### Payment settlement
+
+- Added a raw-body webhook endpoint, HMAC-SHA256 signature verification, timestamp tolerance, payload fingerprinting, provider-event deduplication and idempotent ledger posting.
+- Added payment-intent and settlement event records, with settlement, failure, refund and reversal handling.
+- The HMAC adapter defines a VELT canonical gateway contract. It is not an adapter for a named PSP. No provider API credentials or provider-specific webhook specification have been supplied, so actual deposit-intent creation and payouts remain unconnected.
+- Refunds that cannot be debited from the player's available wallet are held for reconciliation rather than silently creating a negative balance.
+
+### VELT Originals
+
+- Added practice-mode Dice, Mines (5x5), Plinko (8 rows) and Crash endpoints, plus round history.
+- Server-side outcomes use Node cryptographic randomness. Mines hides its board until picks are made; Plinko uses an eight-row binomial distribution with approximately 99.0625% theoretical return; Crash uses a capped 99% theoretical-return distribution.
+- Added a four-game frontend at `/originals`.
+- All four games remain non-monetary practice games. The probability models are implementation estimates and require independent RNG/game-math certification before any real-money deployment.
+
+### Release blockers
+
+- No real PSP is integrated; no deposit API or payout API is configured.
+- No production wallet migration has been run or reconciled.
+- No jurisdictional licence evidence, geolocation provider, KYC/AML integration, self-exclusion enforcement, age verification, limits enforcement or independent game certification has been verified.
+- South African remote interactive casino gaming is not enabled by this change. Jurisdiction and product authorisation must be established before any real-money switch is considered.
