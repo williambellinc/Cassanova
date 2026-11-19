@@ -17,9 +17,9 @@ export async function migrateLegacyWalletBalances(input: { currency: string; app
   const currency = input.currency.toUpperCase();
   if (!/^[A-Z]{3}$/.test(currency)) throw new Error('LEGACY_BALANCE_CURRENCY must be a three-letter currency code');
   const batchKey = input.batchKey || `legacy-wallet-v1-${currency}`;
-  const migrationClearing = await getOrCreateLedgerAccount({
+  const migrationClearing = input.apply ? await getOrCreateLedgerAccount({
     ownerType: 'system', ownerId: batchKey, accountType: 'migration_clearing', currency,
-  });
+  }) : null;
 
   let scanned = 0, alreadyMigrated = 0, eligible = 0, migrated = 0;
   let cashTotalMinor = 0, bonusTotalMinor = 0;
@@ -45,6 +45,7 @@ export async function migrateLegacyWalletBalances(input: { currency: string; app
     }
     if (!input.apply) continue;
 
+    if (!migrationClearing) throw new Error('Migration clearing account was not initialised');
     const wallet = await getOrCreateLedgerAccount({
       ownerType: 'user', ownerId: String(user._id), accountType: 'player_wallet', currency,
     });
