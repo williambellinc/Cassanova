@@ -8,7 +8,7 @@ import authRoutes from './routes/auth.routes';
 import gameRoutes from './routes/game.routes';
 import userRoutes from './routes/user.routes';
 import promotionRoutes from './routes/promotion.routes';
-import transactionRoutes from './routes/transaction.routes';
+import transactionRoutes from './routes/transaction.routes';\nimport originalsRoutes from './routes/originals.routes';
 
 dotenv.config();
 
@@ -26,7 +26,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/promotions', promotionRoutes);
-app.use('/api/transactions', transactionRoutes);
+app.use('/api/transactions', transactionRoutes);\napp.use('/api/originals', originalsRoutes);
 
 // Health check
 app.get('/api/health', (req: Request, res: Response) => {
