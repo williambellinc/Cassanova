@@ -7,7 +7,7 @@ import { paymentProviders } from '../payments/payment-provider.contract';
 
 export const createDepositIntent = async (req: AuthRequest, res: Response) => {
   if (!req.userId) return res.status(401).json({ message: 'Authentication required' });
-  const providerId = process.env.PAYMENT_PROVIDER_ID;
+  const providerId = String(req.body?.provider || process.env.PAYMENT_PROVIDER_ID || '');
   const adapter = providerId ? paymentProviders.get(providerId) : undefined;
   if (!providerId || !adapter) return res.status(503).json({ message: 'No contracted payment provider API adapter is configured' });
 
