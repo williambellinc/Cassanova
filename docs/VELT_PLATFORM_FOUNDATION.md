@@ -51,7 +51,8 @@ This repository is an inherited demonstration casino application. Its existing s
 - No live PSP or payout integration is configured.
 - No production game provider adapter or certified game engine is configured.
 - The existing game detail page still requires a real launch/session flow.
-- Existing JWT, browser token storage, CORS, admin authorisation, secrets management and KYC workflows require a full security review.
+- The legacy user balance remains present and is not yet reconciled against the new ledger; the ledger is not yet the production wallet source.
+- Browser token storage, distributed rate limiting, trusted-proxy configuration, secrets management, KYC workflows and a full security review remain outstanding.
 - No successful build or test run is claimed by this document.
 
 
@@ -87,3 +88,9 @@ This repository is an inherited demonstration casino application. Its existing s
 - Added a per-IP authentication-route rate limiter with 15-minute windows and standard rate-limit response headers.
 - The limiter is intentionally process-local. It is suitable only as an interim control for a single API instance; production horizontal scaling requires a shared rate-limit store and deliberate trusted-proxy configuration.
 - These controls do not replace a full security assessment, WAF/edge protection, distributed abuse detection, or secure deployment configuration.
+
+
+### Phase 3 validation coverage
+
+- Added automated tests for the interim rate limiter's allow/block behavior and the baseline response security headers.
+- The rate limiter is process-local and resets on process restart. Do not rely on it as the sole production abuse-control mechanism.
