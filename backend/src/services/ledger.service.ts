@@ -93,7 +93,7 @@ export async function postLedgerEntry(input: {
         if (!Number.isSafeInteger(account.balanceMinor + delta) || account.balanceMinor + delta < 0) {
           throw new LedgerError('Entry would create a negative or unsafe account balance', 'INSUFFICIENT_FUNDS');
         }
-        const filter: Record<string, unknown> = { _id: account._id, status: 'open' };
+        const filter: any = { _id: account._id, status: 'open' };
         if (delta < 0) filter.balanceMinor = { $gte: -delta };
         const result = await LedgerAccount.updateOne(filter, { $inc: { balanceMinor: delta } }, { session });
         if (result.modifiedCount !== 1) throw new LedgerError('Ledger account changed during posting', 'ACCOUNT_UPDATE_CONFLICT');
