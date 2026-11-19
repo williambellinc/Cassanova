@@ -23,7 +23,7 @@ dotenv.config();
 if (process.env.FLW_SECRET_KEY && process.env.FLW_WEBHOOK_SECRET_HASH) {
   registerPaymentProvider(new FlutterwaveV3Adapter(process.env.FLW_SECRET_KEY, process.env.FLW_WEBHOOK_SECRET_HASH));
 }
-if (process.env.PAYSTACK_SECRET_KEY) registerPaymentProvider(new PaystackAdapter(process.env.PAYSTACK_SECRET_KEY));
+if (process.env.PAYSTACK_SECRET_KEY) registerPaymentProvider(new PaystackAdapter(process.env.PAYSTACK_SECRET_KEY, process.env.PAYSTACK_WEBHOOK_SECRET));
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
