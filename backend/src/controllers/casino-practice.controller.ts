@@ -7,6 +7,8 @@ const RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 const SLOT_SYMBOLS = ['Crown','Star','Bell','Cherry','Lemon'];
 const SLOT_WEIGHTS = [1,2,3,4,5];
 const SLOT_PAYOUTS: Record<string,number> = { Crown:223, Star:68, Bell:25, Cherry:13, Lemon:8 };
+export const SLOT_THEORETICAL_RTP = SLOT_WEIGHTS.reduce((sum,weight,i)=>sum+Math.pow(weight/15,3)*SLOT_PAYOUTS[SLOT_SYMBOLS[i]],0);
+export const ROULETTE_THEORETICAL_RTP = 36/37;
 
 export const playRoulettePractice = async (req: Request, res: Response) => {
   const betType = String(req.body?.betType || '');
@@ -26,7 +28,7 @@ export const playRoulettePractice = async (req: Request, res: Response) => {
   const round = await GameRound.create({ roundReference:randomUUID(),gameCode:'velt-roulette',mode:'demo',
     outcome:{number,color,betType,selection:selection ?? null,result:won?'win':'loss',grossMultiplier:won?multiplier:0},
     algorithmVersion:'velt-european-roulette-37-v1',fairness:rng.fairness });
-  return res.status(201).json({roundReference:round.roundReference,outcome:round.outcome,theoreticalRtp:36/37,notice:'Practice only. Single-zero European roulette; no stake or prize.'});
+  return res.status(201).json({roundReference:round.roundReference,outcome:round.outcome,theoreticalRtp:ROULETTE_THEORETICAL_RTP,notice:'Practice only. Single-zero European roulette; no stake or prize.'});
 };
 
 export const playSlotsPractice = async (_req: Request, res: Response) => {
@@ -40,7 +42,7 @@ export const playSlotsPractice = async (_req: Request, res: Response) => {
   const round = await GameRound.create({roundReference:randomUUID(),gameCode:'velt-slots-3reel',mode:'demo',
     outcome:{symbols,payoutMultiplier:payout,result:payout?'win':'loss'},
     algorithmVersion:'velt-slots-weighted-triples-97pct-v1',fairness:rng.fairness});
-  return res.status(201).json({roundReference:round.roundReference,outcome:round.outcome,theoreticalRtp:0.9700740740740741,notice:'Practice only. Three independent weighted reels; triple matches only.'});
+  return res.status(201).json({roundReference:round.roundReference,outcome:round.outcome,theoreticalRtp:SLOT_THEORETICAL_RTP,notice:'Practice only. Three independent weighted reels; triple matches only.'});
 };
 
 const cardValue = (rank: string) => rank === 'A' ? 1 : ['10','J','Q','K'].includes(rank) ? 0 : Number(rank);
