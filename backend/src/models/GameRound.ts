@@ -14,7 +14,7 @@ const GameRoundSchema = new Schema<IGameRound>({
   roundReference: { type: String, required: true, unique: true, immutable: true },
   gameCode: { type: String, required: true, immutable: true, index: true },
   mode: { type: String, enum: ['demo'], required: true, immutable: true },
-  outcome: { type: Schema.Types.Mixed, required: true, immutable: true },
+  outcome: { type: Schema.Types.Mixed, required: true },
   state: { type: Schema.Types.Mixed },
   algorithmVersion: { type: String, required: true, immutable: true },
 }, { timestamps: { createdAt: true, updatedAt: false }, versionKey: true });
