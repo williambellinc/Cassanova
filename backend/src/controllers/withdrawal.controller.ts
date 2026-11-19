@@ -94,3 +94,34 @@ export const approveAndSubmitWithdrawal = async (req: AuthRequest, res: Response
     return res.status(502).json({ withdrawalId: withdrawal._id, status: withdrawal.status, message: 'Payout outcome is uncertain. Funds remain reserved and the request is held for provider reconciliation; do not retry blindly.' });
   }
 };
+
+export const cancelWithdrawal = async (req: AuthRequest, res: Response) => {
+  if (!req.userId) return res.status(401).json({ message: 'Authentication required' });
+  if (!mongoose.isValidObjectId(req.params.withdrawalId)) return res.status(400).json({ message: 'Invalid withdrawal ID' });
+  const withdrawal = await WithdrawalRequest.findOneAndUpdate(
+    { _id: req.params.withdrawalId, userId: req.userId, status: 'reserved' },
+    { $set: { status: 'review', failureReason: 'Player requested cancellation; ledger release in progress.' } },
+    { new: true },
+  );
+  if (!withdrawal) return res.status(409).json({ message: 'Only a pending, unapproved withdrawal can be cancelled by its owner' });
+  try {
+    const liability = await getOrCreateLedgerAccount({ ownerType: 'system', ownerId: 'velt-withdrawals', accountType: 'withdrawal_liability', currency: withdrawal.currency });
+    const wallet = await getOrCreateLedgerAccount({ ownerType: 'user', ownerId: req.userId, accountType: 'player_wallet', currency: withdrawal.currency });
+    await postLedgerEntry({
+      lines: [
+        { accountId: String(liability._id), direction: 'debit', amountMinor: withdrawal.amountMinor },
+        { accountId: String(wallet._id), direction: 'credit', amountMinor: withdrawal.amountMinor },
+      ],
+      currency: withdrawal.currency, idempotencyKey: 'withdrawal-cancel:' + withdrawal.merchantReference,
+      reference: withdrawal.merchantReference, description: 'Player-cancelled withdrawal reservation released',
+      metadata: { userId: req.userId },
+    });
+    withdrawal.status = 'cancelled';
+    withdrawal.failureReason = undefined;
+    await withdrawal.save();
+    return res.json({ withdrawalId: withdrawal._id, status: withdrawal.status, releasedMinor: withdrawal.amountMinor, currency: withdrawal.currency });
+  } catch (error) {
+    console.error('Withdrawal cancellation release failed:', error);
+    return res.status(503).json({ withdrawalId: withdrawal._id, status: 'review', message: 'Cancellation is held for finance reconciliation; funds remain reserved.' });
+  }
+};
