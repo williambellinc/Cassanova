@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { validateBalancedLines, LedgerError } = require('../dist/services/ledger.service');
+const { validateBalancedLines, normalBalanceForAccount, LedgerError } = require('../dist/services/ledger.service');
 
 test('accepts exactly balanced integer debit and credit lines', () => {
   assert.equal(validateBalancedLines([
@@ -41,4 +41,12 @@ test('rejects journals with only one side', () => {
     () => validateBalancedLines([{ direction: 'debit', amountMinor: 100 }]),
     (error) => error instanceof LedgerError && error.code === 'INVALID_JOURNAL'
   );
+});
+
+test('uses accounting normal balances for assets and player liabilities', () => {
+  assert.equal(normalBalanceForAccount('payment_clearing'), 'debit');
+  assert.equal(normalBalanceForAccount('migration_clearing'), 'debit');
+  assert.equal(normalBalanceForAccount('player_wallet'), 'credit');
+  assert.equal(normalBalanceForAccount('bonus_liability'), 'credit');
+  assert.equal(normalBalanceForAccount('operator_revenue'), 'credit');
 });
