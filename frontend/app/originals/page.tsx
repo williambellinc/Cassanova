@@ -29,6 +29,8 @@ export default function VeltOriginalsPage() {
   const [revealed, setRevealed] = useState<number[]>([]);
   const [mineMultiplier, setMineMultiplier] = useState(1);
   const [crashTarget, setCrashTarget] = useState(2);
+  const [diceTarget, setDiceTarget] = useState(50);
+  const [diceDirection, setDiceDirection] = useState<'over' | 'under'>('over');
 
   const refreshHistory = async (selected = game) => {
     try {
@@ -50,7 +52,7 @@ export default function VeltOriginalsPage() {
     } finally { setBusy(false); }
   };
 
-  const rollDice = () => run(() => call('/originals/dice/demo', {}));
+  const rollDice = () => run(() => call('/originals/dice/demo', { target: diceTarget, direction: diceDirection }));
 
   const startMines = () => run(async () => {
     const data = await call('/originals/mines/demo/start', { mineCount });
@@ -107,9 +109,18 @@ export default function VeltOriginalsPage() {
         <section className="mt-5 grid gap-5 lg:grid-cols-[1fr_300px]">
           <div className="rounded-3xl border border-white/10 bg-[#111827] p-5 sm:p-8">
             {game === 'dice' && <div className="text-center">
-              <p className="text-sm text-slate-400">A six-sided server-generated roll</p>
-              <div className="mx-auto mt-8 flex h-36 w-36 items-center justify-center rounded-3xl bg-slate-100 text-7xl font-black text-slate-950 shadow-xl">{busy ? '…' : result?.outcome?.diceValue ?? '—'}</div>
-              <p className="mt-5 text-xl font-bold capitalize">{result?.outcome?.result || 'Ready to roll?'}</p>
+              <p className="text-sm text-slate-400">Choose over or under. The server generates a 0.00–99.99 result.</p>
+              <div className="mx-auto mt-6 flex max-w-sm flex-wrap items-center justify-center gap-3">
+                <label className="text-left text-xs text-slate-400">Target
+                  <input type="number" min="0.01" max="99.99" step="0.01" value={diceTarget} onChange={e => setDiceTarget(Number(e.target.value))} className="mt-1 block w-28 rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-center text-white" />
+                </label>
+                <label className="text-left text-xs text-slate-400">Win when
+                  <select value={diceDirection} onChange={e => setDiceDirection(e.target.value as 'over' | 'under')} className="mt-1 block rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-white"><option value="over">Over target</option><option value="under">Under target</option></select>
+                </label>
+              </div>
+              <div className="mx-auto mt-6 flex h-36 w-36 items-center justify-center rounded-3xl bg-slate-100 text-6xl font-black text-slate-950 shadow-xl">{busy ? '…' : result?.outcome?.roll?.toFixed(2) ?? '—'}</div>
+              <p className={`mt-5 text-xl font-bold capitalize ${result?.outcome?.result === 'win' ? 'text-emerald-300' : 'text-slate-200'}`}>{result?.outcome?.result || 'Ready to roll?'}</p>
+              {result?.outcome && <p className="mt-1 text-sm text-slate-400">Target {result.outcome.target.toFixed(2)} · {result.outcome.winProbability * 100}% chance · {result.outcome.multiplier}x</p>}
               <button disabled={busy} onClick={rollDice} className="mt-7 rounded-xl bg-cyan-300 px-8 py-3.5 font-extrabold text-slate-950 disabled:opacity-50">{busy ? 'Rolling…' : 'Roll dice'}</button>
             </div>}
 
