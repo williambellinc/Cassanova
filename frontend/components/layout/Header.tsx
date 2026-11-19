@@ -20,7 +20,13 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link href="/games" className="hover:text-yellow-400 transition-colors font-medium">
-              Games
+              Casino
+            </Link>
+            <Link href="/arcade" className="hover:text-yellow-400 transition-colors font-medium">
+              Arcade
+            </Link>
+            <Link href="/originals" className="hover:text-yellow-400 transition-colors font-medium">
+              Originals
             </Link>
             <Link href="/live-casino" className="hover:text-yellow-400 transition-colors font-medium">
               Live Casino
@@ -69,7 +75,13 @@ export default function Header() {
           <div className="md:hidden py-4 border-t border-white/10">
             <nav className="flex flex-col space-y-4">
               <Link href="/games" className="hover:text-yellow-400 transition-colors">
-                Games
+                Casino
+              </Link>
+              <Link href="/arcade" className="hover:text-yellow-400 transition-colors">
+                Arcade
+              </Link>
+              <Link href="/originals" className="hover:text-yellow-400 transition-colors">
+                Originals
               </Link>
               <Link href="/live-casino" className="hover:text-yellow-400 transition-colors">
                 Live Casino
